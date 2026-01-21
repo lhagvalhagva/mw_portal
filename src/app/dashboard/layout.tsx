@@ -10,8 +10,8 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8F9FF] dark:bg-background">
       {/* Sidebar - Зүүн талд */}
-      <Sidebar className="hidden md:flex w-72 flex-shrink-0 border-r bg-white dark:bg-card" />
-      
+      <Sidebar className="hidden md:flex flex-shrink-0 border-r bg-white dark:bg-card" />
+
       {/* Үндсэн хэсэг */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Navbar />
