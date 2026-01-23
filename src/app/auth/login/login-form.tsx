@@ -40,13 +40,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   }, []);
 
   const normalizeUrl = async (input: string): Promise<string> => {
-    if (input.startsWith('https://') || input.startsWith('http://')) return input;
-    const httpsUrl = `https://${input}`;
-    try {
-      const response = await fetch(httpsUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
-      if (response.ok || response.status === 302) return httpsUrl;
-    } catch (e) {}
-    return `http://${input}`;
+    let url = input.trim().replace(/\/+$/, '');
+    if (!url) return '';
+    if (url.startsWith('http://')) {
+      url = `https://${url.slice('http://'.length)}`;
+    }
+    if (!url.startsWith('https://')) {
+      url = `https://${url.replace(/^https?:\/\//, '')}`;
+    }
+    return url;
   };
 
   const showDbSelectionDialog = (databases: string[]): Promise<string> => {
