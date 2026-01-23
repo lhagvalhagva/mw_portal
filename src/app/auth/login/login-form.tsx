@@ -42,17 +42,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
   const normalizeUrl = async (input: string): Promise<string> => {
     const isHttpsPage = window.location.protocol === 'https:';
-    const isDev = process.env.NODE_ENV === 'development';
     if (input.startsWith('https://') || input.startsWith('http://')) {
       if (isHttpsPage && input.startsWith('http://')) {
-        if (!isDev || !allowInsecureHttp) {
-          throw new Error('HTTPS хуудас дээрээс HTTP сервер рүү хандах боломжгүй. Сервер дээр SSL/HTTPS шаардлагатай.');
+        if (!allowInsecureHttp) {
+          throw new Error('HTTPS хуудас дээрээс HTTP сервер рүү хандах боломжгүй. "HTTP зөвшөөрөх" сонголтыг идэвхжүүлнэ үү.');
         }
       }
       return input;
     }
     const httpsUrl = `https://${input}`;
-    if (isHttpsPage) return httpsUrl;
+    if (isHttpsPage && !allowInsecureHttp) return httpsUrl;
     try {
       const response = await fetch(httpsUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
       if (response.ok || response.status === 302) return httpsUrl;
@@ -192,19 +191,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     Намайг санаарай
                   </label>
                 </div>
-                {process.env.NODE_ENV === 'development' && (
-                  <div className="flex items-center space-x-2 ml-1">
-                    <Checkbox
-                      id="allowHttpDev"
-                      checked={allowInsecureHttp}
-                      onCheckedChange={(c) => setAllowInsecureHttp(!!c)}
-                      className="h-4 w-4 rounded-md border-primary/20 data-[state=checked]:bg-primary"
-                    />
-                    <label htmlFor="allowHttpDev" className="text-xs font-semibold text-muted-foreground cursor-pointer select-none">
-                      Dev mode: HTTP зөвшөөрөх
-                    </label>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2 ml-1">
+                  <Checkbox
+                    id="allowHttp"
+                    checked={allowInsecureHttp}
+                    onCheckedChange={(c) => setAllowInsecureHttp(!!c)}
+                    className="h-4 w-4 rounded-md border-primary/20 data-[state=checked]:bg-primary"
+                  />
+                  <label htmlFor="allowHttp" className="text-xs font-semibold text-muted-foreground cursor-pointer select-none">
+                    HTTP зөвшөөрөх
+                  </label>
+                </div>
               </div>
 
               {/* Submit - Compact */}
