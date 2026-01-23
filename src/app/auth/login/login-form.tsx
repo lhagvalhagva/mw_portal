@@ -19,6 +19,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [allowInsecureHttp, setAllowInsecureHttp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -40,15 +41,23 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   }, []);
 
   const normalizeUrl = async (input: string): Promise<string> => {
-    let url = input.trim().replace(/\/+$/, '');
-    if (!url) return '';
-    if (url.startsWith('http://')) {
-      url = `https://${url.slice('http://'.length)}`;
+    const isHttpsPage = window.location.protocol === 'https:';
+    const isDev = process.env.NODE_ENV === 'development';
+    if (input.startsWith('https://') || input.startsWith('http://')) {
+      if (isHttpsPage && input.startsWith('http://')) {
+        if (!isDev || !allowInsecureHttp) {
+          throw new Error('HTTPS хуудас дээрээс HTTP сервер рүү хандах боломжгүй. Сервер дээр SSL/HTTPS шаардлагатай.');
+        }
+      }
+      return input;
     }
-    if (!url.startsWith('https://')) {
-      url = `https://${url.replace(/^https?:\/\//, '')}`;
-    }
-    return url;
+    const httpsUrl = `https://${input}`;
+    if (isHttpsPage) return httpsUrl;
+    try {
+      const response = await fetch(httpsUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
+      if (response.ok || response.status === 302) return httpsUrl;
+    } catch (e) {}
+    return `http://${input}`;
   };
 
   const showDbSelectionDialog = (databases: string[]): Promise<string> => {
@@ -183,6 +192,19 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     Намайг санаарай
                   </label>
                 </div>
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="flex items-center space-x-2 ml-1">
+                    <Checkbox
+                      id="allowHttpDev"
+                      checked={allowInsecureHttp}
+                      onCheckedChange={(c) => setAllowInsecureHttp(!!c)}
+                      className="h-4 w-4 rounded-md border-primary/20 data-[state=checked]:bg-primary"
+                    />
+                    <label htmlFor="allowHttpDev" className="text-xs font-semibold text-muted-foreground cursor-pointer select-none">
+                      Dev mode: HTTP зөвшөөрөх
+                    </label>
+                  </div>
+                )}
               </div>
 
               {/* Submit - Compact */}
