@@ -224,7 +224,7 @@ export const checklistAPI = {
         [domain, fields],
         { order: 'date desc, id desc' }
       );
-
+      console.log('Checklist jobs:', jobs);
       return { success: true, data: jobs || [] };
     } catch (error) {
       console.error('Checklist list error:', error);
