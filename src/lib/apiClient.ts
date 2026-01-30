@@ -1,3 +1,9 @@
+const PORTAL_UID_KEY = 'portalUid';
+
+export function setPortalUid(uid: number): void {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(PORTAL_UID_KEY, String(uid));
+}
+
 export const authAPI = {
   async getDatabases(baseUrl: string): Promise<string[]> {
     try {
@@ -67,6 +73,7 @@ export const authAPI = {
   },
 
   async logout(baseUrl: string) {
+    if (typeof localStorage !== 'undefined') localStorage.removeItem(PORTAL_UID_KEY);
     try {
       const response = await fetch(`${baseUrl}/portal/session/destroy`, {
         method: 'POST',
@@ -191,30 +198,21 @@ async function odooCallKw<T>(baseUrl: string, model: string, method: string, arg
   return data.result as T;
 }
 
-async function getSessionUid(baseUrl: string): Promise<number> {
-  const url = `${baseUrl}/web/session/get_session_info`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now() }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to get session info');
-  }
-
-  const data = await response.json();
-  if (data.error || !data.result?.uid) {
-    throw new Error('Session not authenticated');
-  }
-  return data.result.uid;
+function getPortalUid(): number | null {
+  if (typeof localStorage === 'undefined') return null;
+  const raw = localStorage.getItem(PORTAL_UID_KEY);
+  if (raw == null) return null;
+  const n = parseInt(raw, 10);
+  return Number.isNaN(n) ? null : n;
 }
 
 export const checklistAPI = {
   getList: async (baseUrl: string): Promise<{ success: true; data: any[] } | { success: false; message: string }> => {
     try {
-      const uid = await getSessionUid(baseUrl);
+      const uid = getPortalUid();
+      if (uid == null) {
+        return { success: false, message: 'Session not authenticated' };
+      }
       const domain = [['responsible_user_id', '=', uid]];
       const fields = ['id', 'checklist_conf_id', 'branch_id', 'date', 'state', 'summary'];
       const jobs = await odooCallKw<any[]>(
