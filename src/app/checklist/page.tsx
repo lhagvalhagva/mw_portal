@@ -42,11 +42,9 @@ export default function ChecklistListPage() {
     useEffect(() => {
         const fetchJobs = async () => {
             try {
-                // Assuming base URL is available via env or context, using localhost for now or '' for relative
-                // In a real app, you might have a context providing the API base URL
-                const baseUrl = '/portal' // Proxied via Next.js
-                // Or if apiClient handles full URL logic
-                const response = await checklistAPI.getList('')
+                const baseUrl = localStorage.getItem('rememberMeBaseUrl') || ''
+                if (!baseUrl) return
+                const response = await checklistAPI.getList(baseUrl)
                 if (response.success) {
                     setJobs(response.data)
                 }

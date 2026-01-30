@@ -13,7 +13,9 @@ export function NotificationNav() {
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await checklistAPI.getNotifications('');
+                const baseUrl = localStorage.getItem('rememberMeBaseUrl') || '';
+                if (!baseUrl) return;
+                const response = await checklistAPI.getNotifications(baseUrl);
                 if (response.success) {
                     setNotifications(response.data);
                 }
