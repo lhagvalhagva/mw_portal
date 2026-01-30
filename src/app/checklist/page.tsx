@@ -45,7 +45,7 @@ export default function ChecklistListPage() {
                 const baseUrl = localStorage.getItem('rememberMeBaseUrl') || ''
                 if (!baseUrl) return
                 const response = await checklistAPI.getList(baseUrl)
-                if (response.success) {
+                if (response.success && response.data) {
                     setJobs(response.data)
                 }
             } catch (error) {

@@ -164,37 +164,71 @@ export const attendanceAPI = {
   },
 };
 
+async function odooCallKw<T>(baseUrl: string, model: string, method: string, args: any[] = [], kwargs: any = {}): Promise<T> {
+  const url = `${baseUrl}/web/dataset/call_kw/${model}/${method}`;
+  const payload = {
+    jsonrpc: '2.0',
+    method: 'call',
+    params: { model, method, args, kwargs },
+    id: Date.now(),
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Odoo RPC error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error?.data?.message || data.error?.message || 'Odoo RPC error');
+  }
+  return data.result as T;
+}
+
+async function getSessionUid(baseUrl: string): Promise<number> {
+  const url = `${baseUrl}/web/session/get_session_info`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ jsonrpc: '2.0', id: Date.now() }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get session info');
+  }
+
+  const data = await response.json();
+  if (data.error || !data.result?.uid) {
+    throw new Error('Session not authenticated');
+  }
+  return data.result.uid;
+}
+
 export const checklistAPI = {
-  getList: async (baseUrl: string) => {
+  getList: async (baseUrl: string): Promise<{ success: true; data: any[] } | { success: false; message: string }> => {
     try {
-      console.log(`Fetching: ${baseUrl}/api/checklist/list`);
-      const response = await fetch(`${baseUrl}/api/checklist/list`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
+      const uid = await getSessionUid(baseUrl);
+      const domain = [['responsible_user_id', '=', uid]];
+      const fields = ['id', 'checklist_conf_id', 'branch_id', 'date', 'state', 'summary'];
+      const jobs = await odooCallKw<any[]>(
+        baseUrl,
+        'mw.checklist.job',
+        'search_read',
+        [domain, fields],
+        { order: 'date desc, id desc' }
+      );
 
-      console.log('Response Status:', response.status);
-      const text = await response.text();
-      console.log('Response Body:', text.substring(0, 500));
-
-      if (!response.ok) {
-        return { success: false, message: `Server error: ${response.status}` };
-      }
-
-      try {
-        const data = JSON.parse(text);
-        if (data.status === 'success') {
-          return { success: true, data: data.data };
-        }
-        return { success: false, message: data.message || 'Error fetching checklist list' };
-      } catch (e) {
-        console.error('JSON Parse Error:', e);
-        return { success: false, message: 'Invalid JSON response from server' };
-      }
+      return { success: true, data: jobs || [] };
     } catch (error) {
       console.error('Checklist list error:', error);
-      return { success: false, message: 'Network error' };
+      return { success: false, message: error instanceof Error ? error.message : 'Network error' };
     }
   },
 
