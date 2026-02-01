@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI, setPortalUid } from '@/lib/apiClient';
+import { authAPI } from '@/lib/apiClient';
 import { toast } from 'sonner';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -83,7 +83,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
       const response = await authAPI.login({ baseUrl: normalizedBaseUrl, db: finalDb, login, password });
       if (response.success) {
-        if (response.userId != null) setPortalUid(response.userId);
         toast.success("Амжилттай нэвтэрлээ");
         if (rememberMe) {
           localStorage.setItem('rememberMeBaseUrl', baseUrl);
