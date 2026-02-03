@@ -168,8 +168,7 @@ export const checklistAPI = {
       const data = await jsonRpc(baseUrl, '/api/checklist/notifications') as { status?: string; data?: { count: number; jobs: unknown[] }; message?: string };
       if (data.status === 'success') return { success: true, data: data.data };
       return { success: false, message: data.message || 'Error fetching notifications' };
-    } catch (error) {
-      console.error('Checklist notifications error:', error);
+    } catch {
       return { success: false, message: 'Network error' };
     }
   },
