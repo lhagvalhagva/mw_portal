@@ -87,16 +87,18 @@ export const authAPI = {
   },
 
   getEmployeeProfile: async (baseUrl: string): Promise<any> => {
-    const url = `${baseUrl}/api/auth/employee-profile`;
-    console.log('Fetching employee profile from:', url);
-    const response = await fetch(url, {
+    const response = await fetch(`${baseUrl}/api/auth/employee-profile`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
     });
-    const data = await response.json();
-    console.log('Employee profile data:', data);
-    return data;
+    const text = await response.text();
+    if (!response.ok) return { status: 'error', message: 'API not available' };
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { status: 'error', message: 'Invalid response' };
+    }
   },
 };
 export const attendanceAPI = {
@@ -160,36 +162,31 @@ export const attendanceAPI = {
       method: 'GET',
       credentials: 'include',
     });
-    return await response.json();
+    const text = await response.text();
+    if (!response.ok) return { success: false, last_time: null, count: 0 };
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { success: false, last_time: null, count: 0 };
+    }
   },
 };
 
 export const checklistAPI = {
   getList: async (baseUrl: string) => {
     try {
-      console.log(`Fetching: ${baseUrl}/api/checklist/list`);
       const response = await fetch(`${baseUrl}/api/checklist/list`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-
-      console.log('Response Status:', response.status);
       const text = await response.text();
-      console.log('Response Body:', text.substring(0, 500));
-
-      if (!response.ok) {
-        return { success: false, message: `Server error: ${response.status}` };
-      }
-
+      if (!response.ok) return { success: false, message: `Server error: ${response.status}` };
       try {
         const data = JSON.parse(text);
-        if (data.status === 'success') {
-          return { success: true, data: data.data };
-        }
+        if (data.status === 'success') return { success: true, data: data.data };
         return { success: false, message: data.message || 'Error fetching checklist list' };
-      } catch (e) {
-        console.error('JSON Parse Error:', e);
+      } catch {
         return { success: false, message: 'Invalid JSON response from server' };
       }
     } catch (error) {
@@ -206,11 +203,14 @@ export const checklistAPI = {
         credentials: 'include',
       });
       const text = await response.text();
-      const data = text.startsWith('{') || text.startsWith('[') ? JSON.parse(text) : null;
-      if (data?.status === 'success') {
-        return { success: true, data: data.data };
+      if (!response.ok) return { success: false, message: 'API not available' };
+      try {
+        const data = JSON.parse(text);
+        if (data.status === 'success') return { success: true, data: data.data };
+        return { success: false, message: data.message || 'Error fetching notifications' };
+      } catch {
+        return { success: false, message: 'Invalid response' };
       }
-      return { success: false, message: data?.message || (response.ok ? 'Error fetching notifications' : `HTTP ${response.status}`) };
     } catch (error) {
       console.error('Checklist notifications error:', error);
       return { success: false, message: 'Network error' };
