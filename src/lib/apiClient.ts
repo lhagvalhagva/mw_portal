@@ -1,9 +1,3 @@
-const PORTAL_UID_KEY = 'portalUid';
-
-export function setPortalUid(uid: number): void {
-  if (typeof localStorage !== 'undefined') localStorage.setItem(PORTAL_UID_KEY, String(uid));
-}
-
 export const authAPI = {
   async getDatabases(baseUrl: string): Promise<string[]> {
     try {
@@ -73,7 +67,6 @@ export const authAPI = {
   },
 
   async logout(baseUrl: string) {
-    if (typeof localStorage !== 'undefined') localStorage.removeItem(PORTAL_UID_KEY);
     try {
       const response = await fetch(`${baseUrl}/portal/session/destroy`, {
         method: 'POST',
@@ -171,62 +164,37 @@ export const attendanceAPI = {
   },
 };
 
-async function odooCallKw<T>(baseUrl: string, model: string, method: string, args: any[] = [], kwargs: any = {}): Promise<T> {
-  const url = `${baseUrl}/web/dataset/call_kw/${model}/${method}`;
-  const payload = {
-    jsonrpc: '2.0',
-    method: 'call',
-    params: { model, method, args, kwargs },
-    id: Date.now(),
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Odoo RPC error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  if (data.error) {
-    throw new Error(data.error?.data?.message || data.error?.message || 'Odoo RPC error');
-  }
-  return data.result as T;
-}
-
-function getPortalUid(): number | null {
-  if (typeof localStorage === 'undefined') return null;
-  const raw = localStorage.getItem(PORTAL_UID_KEY);
-  if (raw == null) return null;
-  const n = parseInt(raw, 10);
-  return Number.isNaN(n) ? null : n;
-}
-
 export const checklistAPI = {
-  getList: async (baseUrl: string): Promise<{ success: true; data: any[] } | { success: false; message: string }> => {
+  getList: async (baseUrl: string) => {
     try {
-      const uid = getPortalUid();
-      if (uid == null) {
-        return { success: false, message: 'Session not authenticated' };
+      console.log(`Fetching: ${baseUrl}/api/checklist/list`);
+      const response = await fetch(`${baseUrl}/api/checklist/list`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      console.log('Response Status:', response.status);
+      const text = await response.text();
+      console.log('Response Body:', text.substring(0, 500));
+
+      if (!response.ok) {
+        return { success: false, message: `Server error: ${response.status}` };
       }
-      const domain = [['responsible_user_id', '=', uid]];
-      const fields = ['id', 'checklist_conf_id', 'branch_id', 'date', 'state', 'summary'];
-      const jobs = await odooCallKw<any[]>(
-        baseUrl,
-        'mw.checklist.job',
-        'search_read',
-        [domain, fields],
-        { order: 'date desc, id desc' }
-      );
-      console.log('Checklist jobs:', jobs);
-      return { success: true, data: jobs || [] };
+
+      try {
+        const data = JSON.parse(text);
+        if (data.status === 'success') {
+          return { success: true, data: data.data };
+        }
+        return { success: false, message: data.message || 'Error fetching checklist list' };
+      } catch (e) {
+        console.error('JSON Parse Error:', e);
+        return { success: false, message: 'Invalid JSON response from server' };
+      }
     } catch (error) {
       console.error('Checklist list error:', error);
-      return { success: false, message: error instanceof Error ? error.message : 'Network error' };
+      return { success: false, message: 'Network error' };
     }
   },
 
@@ -237,11 +205,12 @@ export const checklistAPI = {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       });
-      const data = await response.json();
-      if (data.status === 'success') {
+      const text = await response.text();
+      const data = text.startsWith('{') || text.startsWith('[') ? JSON.parse(text) : null;
+      if (data?.status === 'success') {
         return { success: true, data: data.data };
       }
-      return { success: false, message: data.message || 'Error fetching notifications' };
+      return { success: false, message: data?.message || (response.ok ? 'Error fetching notifications' : `HTTP ${response.status}`) };
     } catch (error) {
       console.error('Checklist notifications error:', error);
       return { success: false, message: 'Network error' };
