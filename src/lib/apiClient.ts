@@ -216,15 +216,22 @@ export const checklistAPI = {
         credentials: 'include',
         body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params, id: 1 }),
       });
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.data?.message || data.error.message || 'RPC error');
+      const text = await response.text();
+      if (!response.ok) throw new Error('RPC not available');
+      let data: { error?: unknown; result?: unknown };
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('Invalid response');
+      }
+      if (data.error) throw new Error((data.error as { data?: { message?: string }; message?: string })?.data?.message || (data.error as { message?: string })?.message || 'RPC error');
       return data.result;
     };
     try {
-      const session = await rpc('/web/session/get_session_info', {});
+      const session = (await rpc('/web/session/get_session_info', {})) as { uid?: number };
       const uid = session?.uid;
       if (uid == null) return { success: false, message: 'Session required' };
-      const jobs = await rpc('/web/dataset/call_kw', {
+      const jobs = (await rpc('/web/dataset/call_kw', {
         model: 'mw.checklist.job',
         method: 'search_read',
         args: [[['responsible_user_id', '=', uid], ['state', '=', 'sent']]],
@@ -233,10 +240,9 @@ export const checklistAPI = {
           limit: 10,
           order: 'date desc, id desc',
         },
-      });
+      })) as unknown[] | undefined;
       return { success: true, data: { count: jobs?.length ?? 0, jobs: jobs ?? [] } };
-    } catch (error) {
-      console.error('Checklist notifications error:', error);
+    } catch {
       return { success: false, message: 'Network error' };
     }
   },
