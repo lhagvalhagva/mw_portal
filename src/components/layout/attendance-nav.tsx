@@ -46,11 +46,11 @@ export function AttendanceNav() {
     const res = await attendanceAPI.checkAttendanceStatus(baseUrl);
     
     if (res.success) {
-      setIsCheckedIn(res.is_working);
+      setIsCheckedIn(res.is_working ?? false);
       if (res.last_time) {
         setLastCheckIn(res.last_time);
         // Хэрэв ажиллаж байгаа бол ажилласан хугацааг шууд бодно
-        if (res.is_working) {
+        if (res.is_working ?? false) {
           setTimer(calculateDuration(res.last_time));
         }
       }

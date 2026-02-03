@@ -26,9 +26,10 @@ export default function ChecklistDetailPage() {
         const fetchDetail = async () => {
             try {
                 const response = await checklistAPI.getDetail('', id)
-                if (response.success) {
+                if (response.success && response.data) {
+                    const detail = response.data as { summary?: string; [k: string]: unknown }
                     setData(response.data)
-                    setSummary(response.data.summary || "")
+                    setSummary(detail.summary ?? "")
                 } else {
                     toast.error("Алдаа гарлаа", { description: response.message })
                     router.push('/checklist')

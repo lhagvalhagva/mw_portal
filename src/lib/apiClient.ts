@@ -1,3 +1,18 @@
+/** Odoo type='json' route-д POST + JSON-RPC илгээж, result буцаана */
+async function jsonRpc(baseUrl: string, path: string, params: Record<string, unknown> = {}): Promise<unknown> {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params, id: 1 }),
+  });
+  const text = await response.text();
+  if (!response.ok) throw new Error('RPC not available');
+  const data = JSON.parse(text) as { error?: unknown; result?: unknown };
+  if (data.error) throw new Error((data.error as { data?: { message?: string }; message?: string })?.data?.message || (data.error as { message?: string })?.message || 'RPC error');
+  return data.result;
+}
+
 export const authAPI = {
   async getDatabases(baseUrl: string): Promise<string[]> {
     try {
@@ -87,17 +102,11 @@ export const authAPI = {
   },
 
   getEmployeeProfile: async (baseUrl: string): Promise<any> => {
-    const response = await fetch(`${baseUrl}/api/auth/employee-profile`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    });
-    const text = await response.text();
-    if (!response.ok) return { status: 'error', message: 'API not available' };
     try {
-      return JSON.parse(text);
+      const res = await jsonRpc(baseUrl, '/api/auth/employee-profile') as { status: string; data?: unknown; message?: string };
+      return res;
     } catch {
-      return { status: 'error', message: 'Invalid response' };
+      return { status: 'error', message: 'API not available' };
     }
   },
 };
@@ -109,22 +118,8 @@ export const attendanceAPI = {
    */
   createAttendance: async (baseUrl: string, time: string) => {
     try {
-      const response = await fetch(`${baseUrl}/api/attendance/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          attendance_time: time,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        return { success: true, data: data.data };
-      }
+      const data = await jsonRpc(baseUrl, '/api/attendance/create', { attendance_time: time }) as { success?: boolean; data?: unknown; message?: string };
+      if (data.success) return { success: true, data: data.data };
       return { success: false, message: data.message || 'Ирц бүртгэхэд алдаа гарлаа' };
     } catch (error) {
       console.error('Create attendance error:', error);
@@ -137,19 +132,8 @@ export const attendanceAPI = {
    */
   getAttendanceList: async (baseUrl: string) => {
     try {
-      const response = await fetch(`${baseUrl}/api/attendance/list`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        return { success: true, data: data.data };
-      }
+      const data = await jsonRpc(baseUrl, '/api/attendance/list') as { success?: boolean; data?: unknown; message?: string };
+      if (data.success) return { success: true, data: data.data };
       return { success: false, message: data.message || 'Жагсаалт авахад алдаа гарлаа' };
     } catch (error) {
       console.error('Get attendance list error:', error);
@@ -158,16 +142,11 @@ export const attendanceAPI = {
   },
 
   checkAttendanceStatus: async (baseUrl: string) => {
-    const response = await fetch(`${baseUrl}/api/attendance/status`, {
-      method: 'GET',
-      credentials: 'include',
-    });
-    const text = await response.text();
-    if (!response.ok) return { success: false, last_time: null, count: 0 };
     try {
-      return JSON.parse(text);
+      const res = await jsonRpc(baseUrl, '/api/attendance/status') as { success?: boolean; is_working?: boolean; last_time?: string | null };
+      return res;
     } catch {
-      return { success: false, last_time: null, count: 0 };
+      return { success: false, is_working: false, last_time: null, count: 0 };
     }
   },
 };
@@ -175,20 +154,9 @@ export const attendanceAPI = {
 export const checklistAPI = {
   getList: async (baseUrl: string) => {
     try {
-      const response = await fetch(`${baseUrl}/api/checklist/list`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      const text = await response.text();
-      if (!response.ok) return { success: false, message: `Server error: ${response.status}` };
-      try {
-        const data = JSON.parse(text);
-        if (data.status === 'success') return { success: true, data: data.data };
-        return { success: false, message: data.message || 'Error fetching checklist list' };
-      } catch {
-        return { success: false, message: 'Invalid JSON response from server' };
-      }
+      const data = await jsonRpc(baseUrl, '/api/checklist/list') as { status?: string; data?: unknown; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
+      return { success: false, message: data.message || 'Error fetching checklist list' };
     } catch (error) {
       console.error('Checklist list error:', error);
       return { success: false, message: 'Network error' };
@@ -197,20 +165,9 @@ export const checklistAPI = {
 
   getNotifications: async (baseUrl: string) => {
     try {
-      const response = await fetch(`${baseUrl}/api/checklist/notifications`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      const text = await response.text();
-      if (!response.ok) return { success: false, message: 'API not available' };
-      try {
-        const data = JSON.parse(text);
-        if (data.status === 'success') return { success: true, data: data.data };
-        return { success: false, message: data.message || 'Error fetching notifications' };
-      } catch {
-        return { success: false, message: 'Invalid response' };
-      }
+      const data = await jsonRpc(baseUrl, '/api/checklist/notifications') as { status?: string; data?: { count: number; jobs: unknown[] }; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
+      return { success: false, message: data.message || 'Error fetching notifications' };
     } catch (error) {
       console.error('Checklist notifications error:', error);
       return { success: false, message: 'Network error' };
@@ -219,15 +176,8 @@ export const checklistAPI = {
 
   getDetail: async (baseUrl: string, id: number) => {
     try {
-      const response = await fetch(`${baseUrl}/api/checklist/${id}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        return { success: true, data: data.data };
-      }
+      const data = await jsonRpc(baseUrl, `/api/checklist/${id}`) as { status?: string; data?: unknown; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
       return { success: false, message: data.message || 'Error fetching checklist detail' };
     } catch (error) {
       console.error('Checklist detail error:', error);
@@ -235,18 +185,10 @@ export const checklistAPI = {
     }
   },
 
-  update: async (baseUrl: string, id: number, payload: { json_data?: any, state?: string, summary?: string }) => {
+  update: async (baseUrl: string, id: number, payload: { json_data?: unknown; state?: string; summary?: string }) => {
     try {
-      const response = await fetch(`${baseUrl}/api/checklist/${id}/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        return { success: true, data: data.data };
-      }
+      const data = await jsonRpc(baseUrl, `/api/checklist/${id}/update`, payload) as { status?: string; data?: unknown; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
       return { success: false, message: data.message || 'Error updating checklist' };
     } catch (error) {
       console.error('Checklist update error:', error);

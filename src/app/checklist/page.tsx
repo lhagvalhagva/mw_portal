@@ -46,7 +46,7 @@ export default function ChecklistListPage() {
                 if (!baseUrl) return
                 const response = await checklistAPI.getList(baseUrl)
                 if (response.success && response.data) {
-                    setJobs(response.data)
+                    setJobs(response.data as ChecklistJob[])
                 }
             } catch (error) {
                 console.error(error)
