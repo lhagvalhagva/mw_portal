@@ -16,7 +16,7 @@ export function NotificationNav() {
                 const baseUrl = localStorage.getItem('rememberMeBaseUrl') || '';
                 if (!baseUrl) return;
                 const response = await checklistAPI.getNotifications(baseUrl);
-                if (response.success) {
+                if (response.success && response.data) {
                     setNotifications(response.data);
                 }
             } catch (error) {

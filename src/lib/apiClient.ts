@@ -86,19 +86,32 @@ export const authAPI = {
     }
   },
 
-  getEmployeeProfile: async (baseUrl: string): Promise<any> => {
-    const response = await fetch(`${baseUrl}/api/auth/employee-profile`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+  async getEmployeeProfile(baseUrl: string): Promise<{ status: string; data?: any; message?: string }> {
+    const rpc = async (path: string, params: Record<string, unknown>) => {
+      const response = await fetch(`${baseUrl}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params, id: 1 }),
+      });
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.data?.message || data.error.message || 'RPC error');
+      return data.result;
+    };
+    const session = await rpc('/web/session/get_session_info', {});
+    const uid = session?.uid;
+    if (uid == null) return { status: 'error', message: 'Session required' };
+    const results = await rpc('/web/dataset/call_kw', {
+      model: 'hr.employee',
+      method: 'search_read',
+      args: [[['user_id', '=', uid]]],
+      kwargs: {
+        fields: ['id', 'image_1920', 'name', 'last_name', 'work_phone', 'work_email', 'identification_number', 'job_title', 'display_name', 'department_id', 'work_location_id', 'engagement_in_company'],
+        limit: 1,
+      },
     });
-    const text = await response.text();
-    if (!response.ok) return { status: 'error', message: 'API not available' };
-    try {
-      return JSON.parse(text);
-    } catch {
-      return { status: 'error', message: 'Invalid response' };
-    }
+    if (!results?.length) return { status: 'error', message: 'Ажилтан олдсонгүй' };
+    return { status: 'success', data: results[0] };
   },
 };
 export const attendanceAPI = {
@@ -196,21 +209,32 @@ export const checklistAPI = {
   },
 
   getNotifications: async (baseUrl: string) => {
-    try {
-      const response = await fetch(`${baseUrl}/api/checklist/notifications`, {
-        method: 'GET',
+    const rpc = async (path: string, params: Record<string, unknown>) => {
+      const response = await fetch(`${baseUrl}${path}`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params, id: 1 }),
       });
-      const text = await response.text();
-      if (!response.ok) return { success: false, message: 'API not available' };
-      try {
-        const data = JSON.parse(text);
-        if (data.status === 'success') return { success: true, data: data.data };
-        return { success: false, message: data.message || 'Error fetching notifications' };
-      } catch {
-        return { success: false, message: 'Invalid response' };
-      }
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.data?.message || data.error.message || 'RPC error');
+      return data.result;
+    };
+    try {
+      const session = await rpc('/web/session/get_session_info', {});
+      const uid = session?.uid;
+      if (uid == null) return { success: false, message: 'Session required' };
+      const jobs = await rpc('/web/dataset/call_kw', {
+        model: 'mw.checklist.job',
+        method: 'search_read',
+        args: [[['responsible_user_id', '=', uid], ['state', '=', 'sent']]],
+        kwargs: {
+          fields: ['id', 'checklist_conf_id', 'branch_id', 'date'],
+          limit: 10,
+          order: 'date desc, id desc',
+        },
+      });
+      return { success: true, data: { count: jobs?.length ?? 0, jobs: jobs ?? [] } };
     } catch (error) {
       console.error('Checklist notifications error:', error);
       return { success: false, message: 'Network error' };
