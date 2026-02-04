@@ -26,10 +26,8 @@ interface EditableCellProps {
 export function EditableCell({ type, value, options, onChange, isMobile }: EditableCellProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-    // Поповер болон Сэлэкт цонхны нэвт харагдахгүй solid загвар
     const solidPopoverStyles = "z-[100] bg-white dark:bg-slate-950 opacity-100 shadow-xl border border-border p-0"
 
-    // Текстийн өндрийг автоматаар тааруулах (Auto-expand wrap)
     useEffect(() => {
         if (type === 'text' && textareaRef.current) {
             textareaRef.current.style.height = 'auto'
@@ -172,10 +170,11 @@ export function EditableCell({ type, value, options, onChange, isMobile }: Edita
                     rows={1}
                     placeholder="Бичих..."
                     className={cn(
-                        "resize-none outline-none focus:ring-2 focus:ring-primary/10 rounded-md py-1.5 leading-relaxed overflow-hidden whitespace-pre-wrap break-words",
+                        "resize-none outline-none focus:ring-2 focus:ring-primary/10 rounded-md py-1.5 leading-relaxed overflow-hidden whitespace-pre-wrap break-words overflow-wrap-anywhere w-full",
                         baseInputStyles,
                         isMobile ? "min-h-[80px] h-auto" : "min-h-[36px] h-auto"
                     )}
+                    style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                 />
             )
     }

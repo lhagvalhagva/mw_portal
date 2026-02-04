@@ -49,7 +49,10 @@ export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }
                             <tr>
                                 <th className="px-4 py-4 w-12 text-center border-b font-bold text-muted-foreground text-[11px] uppercase tracking-wider bg-inherit">№</th>
                                 {columns.map(col => col.name !== '№' && (
-                                    <th key={col.name} className="px-6 py-4 min-w-[180px] max-w-[350px] border-b border-l first:border-l-0 font-bold text-muted-foreground text-[11px] uppercase tracking-wider bg-inherit whitespace-normal break-words leading-tight">
+                                    <th key={col.name} className={cn(
+                                        "px-6 py-4 min-w-[180px] border-b border-l first:border-l-0 font-bold text-muted-foreground text-[11px] uppercase tracking-wider bg-inherit whitespace-normal break-words leading-tight",
+                                        col.type === 'text' ? "max-w-[400px]" : "max-w-[350px]"
+                                    )}>
                                         {col.name}
                                     </th>
                                 ))}
@@ -60,7 +63,12 @@ export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }
                                 <tr key={idx} className="hover:bg-muted/5 transition-colors group">
                                     <td className="px-4 py-4 text-center text-muted-foreground bg-muted/5 font-medium border-r border-b align-top">{idx + 1}</td>
                                     {columns.map(col => col.name !== '№' && (
-                                        <td key={col.name} className="px-2 py-2 border-l border-b first:border-l-0 align-top whitespace-normal break-words">
+                                        <td key={col.name} className={cn(
+                                            "px-2 py-2 border-l border-b first:border-l-0 align-top",
+                                            col.type === 'text' 
+                                                ? "whitespace-normal break-words overflow-wrap-anywhere" 
+                                                : "whitespace-normal break-words"
+                                        )}>
                                             <EditableCell type={col.type} value={row[col.name]} options={col.options} onChange={(val) => handleUpdate(idx, col.name, val)} />
                                         </td>
                                     ))}
