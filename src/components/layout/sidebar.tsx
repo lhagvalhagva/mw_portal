@@ -34,7 +34,7 @@ export function Sidebar({ className }: { className?: string }) {
           <span className={cn("text-xl font-black tracking-tight gradient-text whitespace-nowrap transition-all duration-300",
             !isOpen && "opacity-0 w-0 hidden"
           )}>
-            Managewall
+            Ayan Hotel
           </span>
         </Link>
       </div>

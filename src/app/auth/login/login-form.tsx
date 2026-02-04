@@ -13,8 +13,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Server, Mail, Lock, Loader2, Eye, EyeOff, Shield, LogIn } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+  const { t } = useLocale();
   const [baseUrl, setBaseUrl] = useState('');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
@@ -73,7 +75,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       const databases = await authAPI.getDatabases(normalizedBaseUrl);
       
       let finalDb = '';
-      if (databases.length === 0) throw new Error('Өгөгдлийн сан олдсонгүй.');
+      if (databases.length === 0) throw new Error(t('auth.noDatabase'));
       if (databases.length === 1) {
         finalDb = databases[0];
       } else {
@@ -83,7 +85,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
       const response = await authAPI.login({ baseUrl: normalizedBaseUrl, db: finalDb, login, password });
       if (response.success) {
-        toast.success("Амжилттай нэвтэрлээ");
+        toast.success(t('auth.loginSuccess'));
         localStorage.setItem('rememberMeBaseUrl', normalizedBaseUrl);
         localStorage.setItem('rememberMeDb', finalDb);
         if (rememberMe) {
@@ -91,10 +93,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         }
         router.push('/dashboard');
       } else {
-        toast.error(response.message || "Нэвтрэлт амжилтгүй");
+        toast.error(response.message || t('auth.loginFailed'));
       }
     } catch (error: any) {
-      toast.error(error.message || "Алдаа гарлаа");
+      toast.error(error.message || t('auth.error'));
     } finally {
       setLoading(false);
     }
@@ -117,8 +119,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   <Shield className="h-8 w-8 text-primary"/>
                 </div>
                 <div className="space-y-1">
-                  <h1 className="text-3xl font-black tracking-tight gradient-text">Тавтай морил</h1>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest opacity-70">ERP Портал Систем</p>
+                  <h1 className="text-3xl font-black tracking-tight gradient-text">{t('auth.welcome')}</h1>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest opacity-70">{t('auth.system')}</p>
                 </div>
               </div>
 
@@ -126,7 +128,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                    <Server size={12} className="text-primary"/> Серверийн хаяг
+                    <Server size={12} className="text-primary"/> {t('auth.serverUrl')}
                   </Label>
                   <Input
                     required
@@ -139,7 +141,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                    <Mail size={12} className="text-primary"/> Хэрэглэгч
+                    <Mail size={12} className="text-primary"/> {t('auth.user')}
                   </Label>
                   <Input
                     required
@@ -153,7 +155,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                    <Lock size={12} className="text-primary"/> Нууц үг
+                    <Lock size={12} className="text-primary"/> {t('auth.password')}
                   </Label>
                   <div className="relative">
                     <Input
@@ -182,7 +184,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     className="h-4 w-4 rounded-md border-primary/20 data-[state=checked]:bg-primary"
                   />
                   <label htmlFor="rememberMe" className="text-xs font-semibold text-muted-foreground cursor-pointer select-none">
-                    Намайг санаарай
+                    {t('auth.rememberMe')}
                   </label>
                 </div>
               </div>
@@ -190,10 +192,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               {/* Submit - Compact */}
               <div className="space-y-4">
                 <Button type="submit" className="w-full h-12 rounded-xl text-base font-bold btn-gradient" disabled={loading}>
-                  {loading ? <Loader2 className="animate-spin h-5 w-5" /> : <div className="flex items-center gap-2"><LogIn size={18}/> Нэвтрэх</div>}
+                  {loading ? <Loader2 className="animate-spin h-5 w-5" /> : <div className="flex items-center gap-2"><LogIn size={18}/> {t('auth.login')}</div>}
                 </Button>
                 <div className="text-center">
-                  <a href="#" className="text-xs font-bold text-primary/80 hover:text-primary transition-colors">Нууц үгээ мартсан уу?</a>
+                  <a href="#" className="text-xs font-bold text-primary/80 hover:text-primary transition-colors">{t('auth.forgotPassword')}</a>
                 </div>
               </div>
             </div>
@@ -209,9 +211,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <img src="/assets/login.svg" alt="ERP" className="w-52 h-52 object-contain" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-black text-foreground">Managewall ERP</h2>
+                <h2 className="text-2xl font-black text-foreground">Ayan Hotel ERP</h2>
                 <p className="text-sm text-muted-foreground font-medium max-w-[240px]">
-                  Бизнесийн үйл ажиллагааг удирдах цогц портал
+                  {t('auth.tagline')}
                 </p>
               </div>
             </div>
@@ -224,7 +226,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <div className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></div>
               </div>
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/80">
-                Test Environment
+                {t('auth.testEnvironment')}
               </span>
             </div>
           </div>
@@ -233,7 +235,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
       <footer className="text-center space-y-2">
         <p className="text-[10px] text-muted-foreground/60 leading-relaxed max-w-xs mx-auto">
-          Бүх эрх хуулиар хамгаалагдсан. <span className="font-bold">Managewall LLC</span>
+          {t('auth.copyright')} <span className="font-bold">Managewall LLC</span>
         </p>
       </footer>
 
@@ -243,10 +245,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         <DialogContent className="rounded-[2rem] border-none p-6 max-w-sm max-h-[90vh] flex flex-col">
           <DialogHeader className="space-y-2 flex-shrink-0">
             <DialogTitle className="text-2xl font-black gradient-text text-center">
-              Сан сонгох
+              {t('auth.selectDatabase')}
             </DialogTitle>
             <DialogDescription className="text-center font-medium text-xs">
-              Системд бүртгэлтэй сангууд
+              {t('auth.selectDatabaseDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -282,7 +284,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             onClick={() => (window as any).resolveDbSelection(selectedDb)} 
             className="w-full h-12 rounded-xl font-bold btn-gradient mt-2 flex-shrink-0"
           >
-            Сонгох
+            {t('auth.select')}
           </Button>
         </DialogContent>
       </Dialog>

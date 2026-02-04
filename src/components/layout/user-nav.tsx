@@ -93,7 +93,7 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal p-0">
           <div className="flex flex-col space-y-0.5 p-2 bg-primary/5 rounded-xl">
             <p className="text-xs font-bold leading-none truncate">{user?.name || t('user.name')}</p>
-            <p className="text-[10px] text-muted-foreground truncate font-medium">{user?.login || "user@managewall.mn"}</p>
+            <p className="text-[10px] text-muted-foreground truncate font-medium">{user?.login || "user@ayanhotel.mn"}</p>
           </div>
         </DropdownMenuLabel>
         
