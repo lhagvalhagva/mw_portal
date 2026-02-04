@@ -18,7 +18,7 @@ export default function ChecklistConfigChartPage() {
 
   useEffect(() => {
     setMounted(true);
-    const url = localStorage.getItem("odooBaseUrl") || localStorage.getItem("rememberMeBaseUrl");
+    const url = localStorage.getItem("rememberMeBaseUrl");
     setBaseUrl(url);
   }, []);
 

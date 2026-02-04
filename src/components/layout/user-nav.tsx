@@ -19,9 +19,11 @@ import {
 import { authAPI } from "@/lib/apiClient";
 import { LogOut, User, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { getOdooImage } from "@/lib/utils"; // Шинэ helper функц
+import { getOdooImage } from "@/lib/utils";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function UserNav() {
+  const { t } = useLocale();
   const router = useRouter();
   const [user, setUser] = useState<{ name?: string; login?: string; image?: string | null } | null>(null);
 
@@ -68,7 +70,7 @@ export function UserNav() {
       console.error("Logout failed");
     } finally {
       localStorage.removeItem('user_profile');
-      toast.success("Системээс амжилттай гарлаа");
+      toast.success(t('user.logoutSuccess'));
       router.push("/auth/login");
     }
   };
@@ -90,7 +92,7 @@ export function UserNav() {
       <DropdownMenuContent className="w-56 mt-2 rounded-2xl p-1.5 bg-white dark:bg-card shadow-xl border z-[100]" align="end">
         <DropdownMenuLabel className="font-normal p-0">
           <div className="flex flex-col space-y-0.5 p-2 bg-primary/5 rounded-xl">
-            <p className="text-xs font-bold leading-none truncate">{user?.name || "Хэрэглэгч"}</p>
+            <p className="text-xs font-bold leading-none truncate">{user?.name || t('user.name')}</p>
             <p className="text-[10px] text-muted-foreground truncate font-medium">{user?.login || "user@managewall.mn"}</p>
           </div>
         </DropdownMenuLabel>
@@ -100,11 +102,11 @@ export function UserNav() {
         <DropdownMenuGroup className="space-y-0.5">
           <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="rounded-lg cursor-pointer py-2 px-2.5 transition-colors focus:bg-primary/5 group">
             <User className="mr-2.5 h-3.5 w-3.5 text-muted-foreground group-focus:text-primary" />
-            <span className="text-xs font-semibold">Профайл</span>
+            <span className="text-xs font-semibold">{t('user.profile')}</span>
           </DropdownMenuItem>
           <DropdownMenuItem className="rounded-lg cursor-pointer py-2 px-2.5 transition-colors focus:bg-primary/5 group">
             <Settings className="mr-2.5 h-3.5 w-3.5 text-muted-foreground group-focus:text-primary" />
-            <span className="text-xs font-semibold">Тохиргоо</span>
+            <span className="text-xs font-semibold">{t('user.settings')}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
      
@@ -115,7 +117,7 @@ export function UserNav() {
           className="rounded-lg cursor-pointer py-2 px-2.5 text-destructive focus:bg-destructive/10 group transition-all"
         >
           <LogOut className="mr-2.5 h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-          <span className="text-xs font-bold">Гарах</span>
+          <span className="text-xs font-bold">{t('user.logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

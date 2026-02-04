@@ -21,7 +21,9 @@ export default function ChecklistDetailPage() {
     const [summary, setSummary] = useState("")
 
     useEffect(() => {
-        if (!id) return
+        if (!id) {
+            return
+        }
 
         const fetchDetail = async () => {
             try {

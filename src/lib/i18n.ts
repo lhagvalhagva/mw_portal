@@ -98,6 +98,31 @@ const translations: Record<Locale, Record<string, string>> = {
     'sidebar.checklist': 'Checklist',
     'sidebar.system': 'Систем:',
     'sidebar.version': 'Хувилбар 1.0.1 (Beta)',
+    
+    // Notification
+    'notification.title': 'Мэдэгдэл',
+    'notification.new': 'Шинэ',
+    'notification.empty': 'Танд одоогоор шинэ мэдэгдэл байхгүй байна.',
+    'notification.viewAll': 'Миний ажлууд / Бүгдийг харах',
+    
+    // Attendance
+    'attendance.title': 'Ирц',
+    'attendance.working': 'Ажиллаж байна',
+    'attendance.notWorking': 'Ажиллаагүй',
+    'attendance.started': 'Эхэлсэн',
+    'attendance.notRegistered': 'Бүртгэлгүй байна',
+    'attendance.last': 'Сүүлчийн',
+    'attendance.checkIn': 'Check in',
+    'attendance.checkOut': 'Check out',
+    'attendance.checkInSuccess': 'Ажилд орлоо',
+    'attendance.checkOutSuccess': 'Ажлаас гарлаа',
+    
+    // User Nav
+    'user.profile': 'Профайл',
+    'user.settings': 'Тохиргоо',
+    'user.logout': 'Гарах',
+    'user.name': 'Хэрэглэгч',
+    'user.logoutSuccess': 'Системээс амжилттай гарлаа',
   },
   en: {
     // Common
@@ -193,6 +218,31 @@ const translations: Record<Locale, Record<string, string>> = {
     'sidebar.checklist': 'Checklist',
     'sidebar.system': 'System:',
     'sidebar.version': 'Version 1.0.1 (Beta)',
+    
+    // Notification
+    'notification.title': 'Notifications',
+    'notification.new': 'New',
+    'notification.empty': 'You have no new notifications at the moment.',
+    'notification.viewAll': 'My Jobs / View All',
+    
+    // Attendance
+    'attendance.title': 'Attendance',
+    'attendance.working': 'Working',
+    'attendance.notWorking': 'Not Working',
+    'attendance.started': 'Started',
+    'attendance.notRegistered': 'Not Registered',
+    'attendance.last': 'Last',
+    'attendance.checkIn': 'Check in',
+    'attendance.checkOut': 'Check out',
+    'attendance.checkInSuccess': 'Checked in',
+    'attendance.checkOutSuccess': 'Checked out',
+    
+    // User Nav
+    'user.profile': 'Profile',
+    'user.settings': 'Settings',
+    'user.logout': 'Logout',
+    'user.name': 'User',
+    'user.logoutSuccess': 'Successfully logged out',
   },
 };
 

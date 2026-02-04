@@ -32,14 +32,6 @@ export default function ChecklistListPage() {
     const router = useRouter()
     const [jobs, setJobs] = useState<ChecklistJob[]>([])
     const [loading, setLoading] = useState(true)
-    
-    const statusLabels: Record<string, string> = {
-        draft: t('state.draft'),
-        sent: t('state.sent'),
-        received: t('checklist.list.received'),
-        inprogress: t('checklist.list.inprogress'),
-        done: t('checklist.list.done')
-    }
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -58,6 +50,14 @@ export default function ChecklistListPage() {
         }
         fetchJobs()
     }, [])
+    
+    const statusLabels: Record<string, string> = {
+        draft: t('state.draft'),
+        sent: t('state.sent'),
+        received: t('checklist.list.received'),
+        inprogress: t('checklist.list.inprogress'),
+        done: t('checklist.list.done')
+    }
 
     if (loading) {
         return (
