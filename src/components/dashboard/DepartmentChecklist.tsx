@@ -194,7 +194,7 @@ export function DepartmentChecklist() {
                       </td>
                       <td className="px-6 py-4">{getStateBadge(job.state)}</td>
                       <td className="px-6 py-4 text-right">
-                        <Button variant="ghost" size="icon" className="group-hover:translate-x-1 transition-transform">
+                        <Button variant="ghost" size="icon" className="group-hover:translate-x-1 transition-transform" aria-label={t('aria.viewDetails')}>
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </Button>
                       </td>

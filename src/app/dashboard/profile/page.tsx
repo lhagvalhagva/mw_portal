@@ -244,6 +244,7 @@ function CopyableInfoItem({
   value?: string | null, 
   onCopy?: () => void 
 }) {
+  const { t } = useLocale();
   return (
     <div className="flex items-center gap-4 py-3 group hover:bg-muted/30 p-2 rounded-xl transition-colors">
       <div className="p-2.5 rounded-xl bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
@@ -261,6 +262,7 @@ function CopyableInfoItem({
           size="icon" 
           onClick={onCopy} 
           className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-muted-foreground hover:text-primary"
+          aria-label={t('aria.copy')}
         >
           <Copy size={14} />
         </Button>

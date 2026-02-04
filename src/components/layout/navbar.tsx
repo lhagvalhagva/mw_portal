@@ -42,7 +42,7 @@ function NavbarContent({ toggle }: { toggle: () => void }) {
           size="icon"
           className="hidden md:flex hover:bg-white/20 transition-all active:scale-95"
           onClick={toggle}
-          aria-label="Toggle Sidebar"
+          aria-label={t('aria.toggleSidebar')}
         >
           <Menu className="h-5 w-5 text-muted-foreground" />
         </Button>

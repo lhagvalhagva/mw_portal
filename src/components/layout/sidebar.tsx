@@ -2,11 +2,12 @@
 "use client"
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Users, Settings, Package,
-  BarChart3, Calendar, ShieldCheck
+  BarChart3, Calendar
 } from "lucide-react";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useLocale } from "@/contexts/LocaleContext";
@@ -28,8 +29,14 @@ export function Sidebar({ className }: { className?: string }) {
       {/* Logo хэсэг */}
       <div className={cn("p-6 mb-2 flex items-center", !isOpen && "px-4 justify-center")}>
         <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-          <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20 flex-shrink-0">
-            <ShieldCheck className="text-white h-6 w-6" />
+          <div className="flex-shrink-0">
+            <Image 
+              src="/assets/images/ayan_logo.png" 
+              alt="Ayan Logo" 
+              width={24} 
+              height={24} 
+              className="h-8 w-8 object-contain"
+            />
           </div>
           <span className={cn("text-xl font-black tracking-tight gradient-text whitespace-nowrap transition-all duration-300",
             !isOpen && "opacity-0 w-0 hidden"

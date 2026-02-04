@@ -95,7 +95,7 @@ export function AttendanceNav() {
   return (
     <DropdownMenu onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 w-9 h-9">
+        <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-primary/10 w-9 h-9" aria-label={t('aria.attendance')}>
           <Clock className={cn("h-5 w-5 transition-colors", isCheckedIn ? "text-green-500" : "text-muted-foreground")} />
           <span className={cn(
             "absolute top-2 right-2 h-2 w-2 rounded-full border-2 border-white",

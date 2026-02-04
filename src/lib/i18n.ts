@@ -132,6 +132,15 @@ const translations: Record<Locale, Record<string, string>> = {
     'sidebar.system': 'Систем:',
     'sidebar.version': 'Хувилбар 1.0.1 (Beta)',
     
+    // Accessibility
+    'aria.toggleSidebar': 'Sidebar-ыг нээх/хаах',
+    'aria.viewDetails': 'Дэлгэрэнгүй харах',
+    'aria.goBack': 'Буцах',
+    'aria.copy': 'Хуулах',
+    'aria.notifications': 'Мэдэгдэл',
+    'aria.attendance': 'Ирц',
+    'aria.changeLanguage': 'Хэл солих',
+    
     // Notification
     'notification.title': 'Мэдэгдэл',
     'notification.new': 'Шинэ',
@@ -307,6 +316,15 @@ const translations: Record<Locale, Record<string, string>> = {
     'sidebar.checklist': 'Checklist',
     'sidebar.system': 'System:',
     'sidebar.version': 'Version 1.0.1 (Beta)',
+    
+    // Accessibility
+    'aria.toggleSidebar': 'Toggle Sidebar',
+    'aria.viewDetails': 'View Details',
+    'aria.goBack': 'Go Back',
+    'aria.copy': 'Copy',
+    'aria.notifications': 'Notifications',
+    'aria.attendance': 'Attendance',
+    'aria.changeLanguage': 'Change Language',
     
     // Notification
     'notification.title': 'Notifications',

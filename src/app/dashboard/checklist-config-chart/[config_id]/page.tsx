@@ -55,7 +55,7 @@ export default function ChecklistConfigChartPage() {
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild aria-label={t('aria.goBack')}>
           <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">{t('common.back')}</span>
