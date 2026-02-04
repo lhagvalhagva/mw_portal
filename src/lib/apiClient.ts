@@ -25,19 +25,11 @@ export const authAPI = {
         body: JSON.stringify({}),
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch databases: ${response.statusText}`);
-      }
-
+      if (!response.ok) {throw new Error(`Failed to fetch databases: ${response.statusText}`);}
       const data = await response.json();
-      if (data.result) {
-        return data.result;
-      }
+      if (data.result) {return data.result;}
       return [];
-    } catch (error) {
-      console.error('Error fetching databases:', error);
-      return [];
-    }
+    } catch (error) {console.error('Error fetching databases:', error); return [];}
   },
 
   async login({ baseUrl, db, login, password }: {
@@ -155,10 +147,46 @@ export const checklistAPI = {
   getList: async (baseUrl: string) => {
     try {
       const data = await jsonRpc(baseUrl, '/api/checklist/list') as { status?: string; data?: unknown; message?: string };
+      console.log('data', data);
       if (data.status === 'success') return { success: true, data: data.data };
       return { success: false, message: data.message || 'Error fetching checklist list' };
     } catch (error) {
       console.error('Checklist list error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  getDepartmentList: async (baseUrl: string) => {
+    try {
+      const data = await jsonRpc(baseUrl, '/api/checklist/department/list') as { status?: string; data?: unknown; message?: string };
+      console.log('data', data);
+      if (data.status === 'success') return { success: true, data: data.data };
+      console.log('data', data);
+      return { success: false, message: data.message || 'Error fetching department checklist' };
+    } catch (error) {
+      console.error('Department checklist error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  getDepartmentDetail: async (baseUrl: string, id: number) => {
+    try {
+      const data = await jsonRpc(baseUrl, `/api/checklist/department/${id}`) as { status?: string; data?: unknown; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
+      return { success: false, message: data.message || 'Error fetching department checklist detail' };
+    } catch (error) {
+      console.error('Department checklist detail error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  getDepartmentConfigChart: async (baseUrl: string, configId: number) => {
+    try {
+      const data = await jsonRpc(baseUrl, `/api/checklist/department/config/${configId}/chart`) as { status?: string; data?: unknown; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
+      return { success: false, message: data.message || 'Error fetching config chart data' };
+    } catch (error) {
+      console.error('Department config chart error:', error);
       return { success: false, message: 'Network error' };
     }
   },

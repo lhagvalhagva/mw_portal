@@ -84,9 +84,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       const response = await authAPI.login({ baseUrl: normalizedBaseUrl, db: finalDb, login, password });
       if (response.success) {
         toast.success("Амжилттай нэвтэрлээ");
+        localStorage.setItem('rememberMeBaseUrl', normalizedBaseUrl);
+        localStorage.setItem('rememberMeDb', finalDb);
         if (rememberMe) {
-          localStorage.setItem('rememberMeBaseUrl', baseUrl);
-          localStorage.setItem('rememberMeDb', finalDb);
           localStorage.setItem('rememberMeLogin', login);
         }
         router.push('/dashboard');
@@ -224,7 +224,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <div className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></div>
               </div>
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/80">
-                System Secure
+                Test Environment
               </span>
             </div>
           </div>

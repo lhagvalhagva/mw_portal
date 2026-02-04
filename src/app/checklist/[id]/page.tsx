@@ -25,7 +25,13 @@ export default function ChecklistDetailPage() {
 
         const fetchDetail = async () => {
             try {
-                const response = await checklistAPI.getDetail('', id)
+                const baseUrl = localStorage.getItem('rememberMeBaseUrl') || ''
+                if (!baseUrl) {
+                    toast.error('Сервер тохируулаагүй байна')
+                    router.push('/checklist')
+                    return
+                }
+                const response = await checklistAPI.getDetail(baseUrl, id)
                 if (response.success && response.data) {
                     const detail = response.data as { summary?: string; [k: string]: unknown }
                     setData(response.data)
@@ -57,7 +63,13 @@ export default function ChecklistDetailPage() {
                 summary: summary
             }
 
-            const response = await checklistAPI.update('', id, payload)
+            const baseUrl = localStorage.getItem('rememberMeBaseUrl') || ''
+            if (!baseUrl) {
+                toast.error('Сервер тохируулаагүй байна')
+                setSaving(false)
+                return
+            }
+            const response = await checklistAPI.update(baseUrl, id, payload)
             if (response.success) {
                 toast.success(status === 'done' ? "Амжилттай илгээлээ" : "Хадгалагдлаа")
                 if (status === 'done') {
