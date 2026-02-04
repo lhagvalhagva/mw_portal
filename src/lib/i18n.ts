@@ -54,6 +54,21 @@ const translations: Record<Locale, Record<string, string>> = {
     'checklist.list.received': 'Хүлээн авсан',
     'checklist.list.inprogress': 'Хийгдэж байгаа',
     'checklist.list.done': 'Гүйцэтгэсэн',
+    'checklist.table.title': 'Шалгах хуудас',
+    'checklist.table.description': 'Мэдээллийг үнэн зөв бөглөнө үү',
+    'checklist.table.save': 'Хадгалах',
+    'checklist.table.submit': 'Дуусгах',
+    'checklist.table.select': 'Сонгох...',
+    'checklist.table.date': 'Огноо',
+    'checklist.table.image': 'Зураг оруулах',
+    'checklist.table.write': 'Бичих...',
+    'checklist.table.preview': 'Preview',
+    'checklist.department.fetchError': 'Мэдээлэл татахад алдаа гарлаа.',
+    'checklist.department.loading': 'Ажлуудыг ачаалж байна...',
+    'checklist.chart.loadError': 'Ачаалалт амжилтгүй',
+    'checklist.chart.missingParams': 'jobId эсвэл configId заавал байх ёстой',
+    'checklist.chart.networkError': 'Сүлжээний алдаа',
+    'checklist.chart.booleanMetric': 'Boolean метрик: <strong>value</strong> = тухайн өдөр true мөрийн тоо, <strong>total</strong> = нийт мөр.',
     
     // Chart
     'chart.from': 'Эхлэх',
@@ -85,6 +100,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'table.state': 'Төлөв',
     'table.action': 'Үйлдэл',
     'table.summary': 'Тайлбар',
+    'table.pagination.showing': '{start}-{end} / {total}',
     
     // States
     'state.draft': 'Ноорог',
@@ -174,6 +190,21 @@ const translations: Record<Locale, Record<string, string>> = {
     'checklist.list.received': 'Received',
     'checklist.list.inprogress': 'In Progress',
     'checklist.list.done': 'Completed',
+    'checklist.table.title': 'Checklist',
+    'checklist.table.description': 'Please fill in the information accurately',
+    'checklist.table.save': 'Save',
+    'checklist.table.submit': 'Submit',
+    'checklist.table.select': 'Select...',
+    'checklist.table.date': 'Date',
+    'checklist.table.image': 'Upload Image',
+    'checklist.table.write': 'Write...',
+    'checklist.table.preview': 'Preview',
+    'checklist.department.fetchError': 'Failed to fetch data.',
+    'checklist.department.loading': 'Loading jobs...',
+    'checklist.chart.loadError': 'Failed to load',
+    'checklist.chart.missingParams': 'jobId or configId is required',
+    'checklist.chart.networkError': 'Network error',
+    'checklist.chart.booleanMetric': 'Boolean metric: <strong>value</strong> = number of true rows for that day, <strong>total</strong> = total rows.',
     
     // Chart
     'chart.from': 'From',
@@ -205,6 +236,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'table.state': 'State',
     'table.action': 'Action',
     'table.summary': 'Summary',
+    'table.pagination.showing': '{start}-{end} / {total}',
     
     // States
     'state.draft': 'Draft',

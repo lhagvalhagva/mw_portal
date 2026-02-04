@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Save, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/contexts/LocaleContext"
 
 interface Column {
     name: string
@@ -21,6 +22,7 @@ interface DynamicTableProps {
 }
 
 export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }: DynamicTableProps) {
+    const { t } = useLocale();
     const [rows, setRows] = useState(initialData.rows)
     const columns = initialData.columns
 
@@ -37,8 +39,8 @@ export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }
         <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7 px-6">
                 <div>
-                    <CardTitle className="text-2xl font-bold tracking-tight">Шалгах хуудас</CardTitle>
-                    <CardDescription>Мэдээллийг үнэн зөв бөглөнө үү</CardDescription>
+                    <CardTitle className="text-2xl font-bold tracking-tight">{t('checklist.table.title')}</CardTitle>
+                    <CardDescription>{t('checklist.table.description')}</CardDescription>
                 </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -102,8 +104,8 @@ export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }
             {/* ACTION BAR */}
             {!readOnly && (
                 <div className="p-4 bg-background/80 backdrop-blur-md border-t flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => onSave?.(rows)}><Save className="w-4 h-4 mr-2" /> Хадгалах</Button>
-                    <Button className="bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/20" onClick={() => onSubmit?.(rows)}><Send className="w-4 h-4 mr-2" /> Дуусгах</Button>
+                    <Button variant="outline" onClick={() => onSave?.(rows)}><Save className="w-4 h-4 mr-2" /> {t('checklist.table.save')}</Button>
+                    <Button className="bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/20" onClick={() => onSubmit?.(rows)}><Send className="w-4 h-4 mr-2" /> {t('checklist.table.submit')}</Button>
                 </div>
             )}
         </Card>

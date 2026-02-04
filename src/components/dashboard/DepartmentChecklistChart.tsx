@@ -112,25 +112,25 @@ export default function DepartmentChecklistChartWidget({
             }
           });
         } else {
-          setErr(res.message || "Ачаалалт амжилтгүй");
+          setErr(res.message || t('checklist.chart.loadError'));
           setDetail(null);
           return;
         }
       } else if (jobId && getDepartmentDetail) {
         res = await getDepartmentDetail(baseUrl, jobId);
         if (!res.success) {
-          setErr(res.message || "Ачаалалт амжилтгүй");
+          setErr(res.message || t('checklist.chart.loadError'));
           setDetail(null);
           return;
         }
         setDetail(res.data as DepartmentDetail);
       } else {
-        setErr("jobId эсвэл configId заавал байх ёстой");
+        setErr(t('checklist.chart.missingParams'));
         setDetail(null);
         return;
       }
     } catch (e: any) {
-      setErr(e?.message || "Сүлжээний алдаа");
+      setErr(e?.message || t('checklist.chart.networkError'));
       setDetail(null);
     } finally {
       setLoading(false);
@@ -234,7 +234,7 @@ export default function DepartmentChecklistChartWidget({
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-wrap items-end gap-3">
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Эхлэх</label>
+          <label className="text-xs font-medium text-muted-foreground">{t('chart.from')}</label>
           <input
             type="date"
             value={from}
@@ -243,7 +243,7 @@ export default function DepartmentChecklistChartWidget({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Дуусах</label>
+          <label className="text-xs font-medium text-muted-foreground">{t('chart.to')}</label>
           <input
             type="date"
             value={to}
@@ -252,7 +252,7 @@ export default function DepartmentChecklistChartWidget({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">Метрик</label>
+          <label className="text-xs font-medium text-muted-foreground">{t('chart.metric')}</label>
           <select
             value={metric}
             onChange={(e) => setMetric(e.target.value)}
@@ -266,16 +266,16 @@ export default function DepartmentChecklistChartWidget({
           </select>
         </div>
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground">График</label>
+          <label className="text-xs font-medium text-muted-foreground">{t('chart.type')}</label>
           <select
             value={chartKind}
             onChange={(e) => setChartKind(e.target.value as ChartKind)}
             className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
           >
-            <option value="auto">Авто</option>
-            <option value="bar">Бар</option>
-            <option value="line">Шугам</option>
-            <option value="stacked">Давхарга</option>
+            <option value="auto">{t('chart.type.auto')}</option>
+            <option value="bar">{t('chart.type.bar')}</option>
+            <option value="line">{t('chart.type.line')}</option>
+            <option value="stacked">{t('chart.type.stacked')}</option>
           </select>
         </div>
         <button
@@ -358,9 +358,7 @@ export default function DepartmentChecklistChartWidget({
       </div>
 
       {detail && metricMeta?.type === "boolean" ? (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Boolean метрик: <strong>value</strong> = тухайн өдөр true мөрийн тоо, <strong>total</strong> = нийт мөр.
-        </p>
+        <p className="mt-2 text-xs text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('checklist.chart.booleanMetric') }} />
       ) : null}
     </div>
   );

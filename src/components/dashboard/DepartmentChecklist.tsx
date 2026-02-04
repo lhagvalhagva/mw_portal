@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { checklistAPI } from "@/lib/apiClient";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, AlertCircle, MapPin, ClipboardList, ChevronRight, User } from "lucide-react";
+import { Loader2, AlertCircle, MapPin, ClipboardList, ChevronRight, User, ChevronLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -33,6 +33,8 @@ export function DepartmentChecklist() {
   const [jobs, setJobs] = useState<ChecklistJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Detail view state
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
@@ -56,7 +58,7 @@ export function DepartmentChecklist() {
           setJobs(response.data as ChecklistJob[]);
         }
       } catch (err) {
-        setError("Мэдээлэл татахад алдаа гарлаа.");
+        setError(t('checklist.department.fetchError'));
       } finally {
         setLoading(false);
       }
@@ -109,6 +111,20 @@ export function DepartmentChecklist() {
     return Object.values(groups);
   }, [jobs]);
 
+  const paginatedJobs = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return jobs.slice(startIndex, endIndex);
+  }, [jobs, currentPage]);
+
+  const totalPages = Math.ceil(jobs.length / itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
   const getStateBadge = (state: string) => {
     const config: Record<string, { labelKey: string; class: string }> = {
       draft: { labelKey: 'state.draft', class: "bg-slate-100 text-slate-600 border-none" },
@@ -125,7 +141,7 @@ export function DepartmentChecklist() {
     return (
       <div className="flex flex-col items-center justify-center p-12 gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary/60" />
-        <p className="text-sm text-muted-foreground animate-pulse">Ажлуудыг ачаалж байна...</p>
+        <p className="text-sm text-muted-foreground animate-pulse">{t('checklist.department.loading')}</p>
       </div>
     );
   }
@@ -163,7 +179,7 @@ export function DepartmentChecklist() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {jobs.map((job) => (
+                  {paginatedJobs.map((job) => (
                     <tr 
                       key={job.id} 
                       onClick={() => handleRowClick(job.id)}
@@ -186,6 +202,63 @@ export function DepartmentChecklist() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          
+          {jobs.length > itemsPerPage && (
+            <div className="flex items-center justify-between px-6 py-4 border-t bg-muted/20">
+              <div className="text-sm text-muted-foreground">
+                {t('table.pagination.showing', { 
+                  start: (currentPage - 1) * itemsPerPage + 1, 
+                  end: Math.min(currentPage * itemsPerPage, jobs.length),
+                  total: jobs.length 
+                })}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="h-8"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum: number;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    return (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="h-8"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

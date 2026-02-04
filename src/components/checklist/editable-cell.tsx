@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/contexts/LocaleContext"
 
 // UI Components
 import { Checkbox } from "@/components/ui/checkbox"
@@ -24,6 +25,7 @@ interface EditableCellProps {
 }
 
 export function EditableCell({ type, value, options, onChange, isMobile }: EditableCellProps) {
+    const { t } = useLocale();
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     const solidPopoverStyles = "z-[100] bg-white dark:bg-slate-950 opacity-100 shadow-xl border border-border p-0"
@@ -56,7 +58,7 @@ export function EditableCell({ type, value, options, onChange, isMobile }: Edita
             return (
                 <Select value={value || ""} onValueChange={onChange}>
                     <SelectTrigger className={baseInputStyles}>
-                        <SelectValue placeholder="Сонгох..." />
+                        <SelectValue placeholder={t('checklist.table.select')} />
                     </SelectTrigger>
                     <SelectContent className={solidPopoverStyles}>
                         {options?.map((opt) => (
@@ -90,7 +92,7 @@ export function EditableCell({ type, value, options, onChange, isMobile }: Edita
                     <PopoverTrigger asChild>
                         <Button variant="outline" className={cn("justify-start text-left font-normal px-2", baseInputStyles, !value && "text-muted-foreground")}>
                             <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                            <span className="truncate">{dateValue && !isNaN(dateValue.getTime()) ? format(dateValue, "yyyy-MM-dd") : "Огноо"}</span>
+                            <span className="truncate">{dateValue && !isNaN(dateValue.getTime()) ? format(dateValue, "yyyy-MM-dd") : t('checklist.table.date')}</span>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className={solidPopoverStyles} align="start">
@@ -110,7 +112,7 @@ export function EditableCell({ type, value, options, onChange, isMobile }: Edita
                                     <img src={value} className="h-10 w-10 object-cover cursor-zoom-in" alt="thumb" />
                                 </DialogTrigger>
                                 <DialogContent className="max-w-3xl p-0 bg-transparent border-none shadow-none">
-                                    <DialogTitle className="sr-only">Preview</DialogTitle>
+                                    <DialogTitle className="sr-only">{t('checklist.table.preview')}</DialogTitle>
                                     <img src={value} className="w-full h-auto rounded-lg shadow-2xl" alt="full" />
                                 </DialogContent>
                             </Dialog>
@@ -132,7 +134,7 @@ export function EditableCell({ type, value, options, onChange, isMobile }: Edita
                             {isMobile ? (
                                 <span className="flex items-center gap-2 text-muted-foreground font-medium">
                                     <ImagePlus className="h-5 w-5" />
-                                    <span className="text-sm">Зураг оруулах</span>
+                                    <span className="text-sm">{t('checklist.table.image')}</span>
                                 </span>
                             ) : (
                                 <ImagePlus className="h-4 w-4 text-muted-foreground" />
@@ -168,7 +170,7 @@ export function EditableCell({ type, value, options, onChange, isMobile }: Edita
                     value={value || ""}
                     onChange={(e) => onChange(e.target.value)}
                     rows={1}
-                    placeholder="Бичих..."
+                    placeholder={t('checklist.table.write')}
                     className={cn(
                         "resize-none outline-none focus:ring-2 focus:ring-primary/10 rounded-md py-1.5 leading-relaxed overflow-hidden whitespace-pre-wrap break-words overflow-wrap-anywhere w-full",
                         baseInputStyles,
