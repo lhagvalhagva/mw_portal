@@ -15,6 +15,7 @@ import {
   Copy, Check, AlertCircle, Send, Smartphone 
 } from "lucide-react";
 import { toast } from "sonner";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface EmployeeProfile {
   id: number;
@@ -31,6 +32,7 @@ interface EmployeeProfile {
 }
 
 export default function ProfilePage() {
+  const { t } = useLocale();
   const [employee, setEmployee] = useState<EmployeeProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +46,10 @@ export default function ProfilePage() {
       if (res.status === "success") {
         setEmployee(res.data);
       } else {
-        setError(res.message || "Мэдээлэл олдсонгүй");
+        setError(res.message || t('profile.notFound'));
       }
     } catch (error) {
-      setError("Сүлжээний алдаа гарлаа");
+      setError(t('profile.networkError'));
     } finally {
       setLoading(false);
     }
@@ -61,7 +63,7 @@ export default function ProfilePage() {
   const handleCopy = (text: string | undefined, label: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    toast.success(`${label} хуулагдлаа`, {
+    toast.success(t('profile.copied', { label }), {
       icon: <Check className="h-4 w-4 text-green-500" />,
     });
   };
@@ -75,7 +77,7 @@ export default function ProfilePage() {
           <AlertCircle className="h-8 w-8 text-destructive" />
         </div>
         <p className="text-muted-foreground font-medium">{error}</p>
-        <Button onClick={fetchProfile} variant="outline">Дахин ачаалах</Button>
+        <Button onClick={fetchProfile} variant="outline">{t('profile.reload')}</Button>
       </div>
     );
   }
@@ -106,7 +108,7 @@ export default function ProfilePage() {
                 {employee.name?.charAt(0)}
             </AvatarFallback>
               </Avatar>
-              <span className="absolute bottom-2 right-2 h-5 w-5 bg-green-500 border-4 border-white dark:border-card rounded-full" title="Active" />
+              <span className="absolute bottom-2 right-2 h-5 w-5 bg-green-500 border-4 border-white dark:border-card rounded-full" title={t('profile.active')} />
             </div>
 
             {/* Name & Title */}
@@ -119,7 +121,7 @@ export default function ProfilePage() {
               </div>
               <p className="text-muted-foreground font-medium flex items-center gap-2 text-lg">
                 <Briefcase size={18} className="text-primary/70" />
-                {employee.job_title || "Албан тушаал тодорхойгүй"}
+                {employee.job_title || t('profile.jobTitleUnknown')}
               </p>
             </div>
 
@@ -127,12 +129,12 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3 mb-2 w-full md:w-auto">
               {employee.work_email && (
                 <Button className="flex-1 md:flex-none rounded-xl" onClick={() => window.open(`mailto:${employee.work_email}`)}>
-                  <Send className="mr-2 h-4 w-4" /> Имэйл
+                  <Send className="mr-2 h-4 w-4" /> {t('profile.email')}
                 </Button>
               )}
               {employee.work_phone && (
                 <Button variant="outline" className="flex-1 md:flex-none rounded-xl" onClick={() => window.open(`tel:${employee.work_phone}`)}>
-                  <Smartphone className="mr-2 h-4 w-4" /> Залгах
+                  <Smartphone className="mr-2 h-4 w-4" /> {t('profile.call')}
                 </Button>
               )}
             </div>
@@ -143,8 +145,8 @@ export default function ProfilePage() {
       {/* 2. TABS & CONTENT */}
       <Tabs defaultValue="general" className="w-full">
         <TabsList className="bg-transparent p-0 gap-6 border-b rounded-none w-full justify-start h-auto">
-          <TabTrigger value="general" label="Ерөнхий мэдээлэл" icon={<User size={16} />} />
-          <TabTrigger value="organization" label="Байгууллага" icon={<Building2 size={16} />} />
+          <TabTrigger value="general" label={t('profile.tab.general')} icon={<User size={16} />} />
+          <TabTrigger value="organization" label={t('profile.tab.organization')} icon={<Building2 size={16} />} />
           {/* Ирээдүйд нэмэх боломжтой */}
           {/* <TabTrigger value="documents" label="Бичиг баримт" icon={<FileText size={16} />} /> */}
         </TabsList>
@@ -156,25 +158,25 @@ export default function ProfilePage() {
               <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-[2rem]">
                 <CardHeader>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <User className="h-5 w-5 text-primary" /> Холбоо барих
+                    <User className="h-5 w-5 text-primary" /> {t('profile.contact')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1">
                   <CopyableInfoItem 
                     icon={<Mail />} 
-                    label="И-мэйл хаяг" 
+                    label={t('profile.emailAddress')} 
                     value={employee.work_email} 
-                    onCopy={() => handleCopy(employee.work_email, "Имэйл")}
+                    onCopy={() => handleCopy(employee.work_email, t('profile.email'))}
                   />
                   <CopyableInfoItem 
                     icon={<Phone />} 
-                    label="Утасны дугаар" 
+                    label={t('profile.phoneNumber')} 
                     value={employee.work_phone} 
-                    onCopy={() => handleCopy(employee.work_phone, "Утас")}
+                    onCopy={() => handleCopy(employee.work_phone, t('profile.phoneNumber'))}
                   />
                   <CopyableInfoItem 
                     icon={<MapPin />} 
-                    label="Ажлын байршил" 
+                    label={t('profile.workLocation')} 
                     value={employee.work_location_id?.[1]} 
                   />
                 </CardContent>
@@ -184,11 +186,11 @@ export default function ProfilePage() {
               <Card className="md:col-span-2 border-none shadow-sm hover:shadow-md transition-shadow rounded-[2rem]">
                 <CardHeader>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <IdCard className="h-5 w-5 text-primary" /> Хувийн мэдээлэл
+                    <IdCard className="h-5 w-5 text-primary" /> {t('profile.personalInfo')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-                  <CopyableInfoItem icon={<MapPin />} label="Гэрийн хаяг" value={employee.live_address} />
+                  <CopyableInfoItem icon={<MapPin />} label={t('profile.homeAddress')} value={employee.live_address} />
                   {/* Энд нэмэлт талбарууд байж болно: Төрсөн өдөр, Хүйс г.м */}
                 </CardContent>
               </Card>
@@ -199,14 +201,14 @@ export default function ProfilePage() {
              <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-[2rem]">
                 <CardHeader>
                   <CardTitle className="text-base font-bold flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-primary" /> Албан тушаалын мэдээлэл
+                    <Building2 className="h-5 w-5 text-primary" /> {t('profile.positionInfo')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
-                  <CopyableInfoItem icon={<Building2 />} label="Хэлтэс / Нэгж" value={employee.department_id?.[1]} />
-                  <CopyableInfoItem icon={<Briefcase />} label="Албан тушаал" value={employee.job_title} />
-                  <CopyableInfoItem icon={<Calendar />} label="Ажилд орсон огноо" value={employee.engagement_in_company} />
-                  <CopyableInfoItem icon={<User />} label="Удирдах албан тушаалтан" value="Manager Name (Placeholder)" />
+                  <CopyableInfoItem icon={<Building2 />} label={t('profile.department')} value={employee.department_id?.[1]} />
+                  <CopyableInfoItem icon={<Briefcase />} label={t('profile.position')} value={employee.job_title} />
+                  <CopyableInfoItem icon={<Calendar />} label={t('profile.startDate')} value={employee.engagement_in_company} />
+                  <CopyableInfoItem icon={<User />} label={t('profile.manager')} value="Manager Name (Placeholder)" />
                 </CardContent>
               </Card>
           </TabsContent>
