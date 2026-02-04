@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BarChart3 } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface ChecklistJob {
   id: number;
@@ -28,6 +29,7 @@ interface ChecklistJobDetail extends ChecklistJob {
 }
 
 export function DepartmentChecklist() {
+  const { t } = useLocale();
   const [jobs, setJobs] = useState<ChecklistJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,15 +110,15 @@ export function DepartmentChecklist() {
   }, [jobs]);
 
   const getStateBadge = (state: string) => {
-    const config: Record<string, { label: string; class: string }> = {
-      draft: { label: "Ноорог", class: "bg-slate-100 text-slate-600 border-none" },
-      sent: { label: "Илгээсэн", class: "bg-blue-50 text-blue-600 border-none" },
-      received: { label: "Хүлээж авсан", class: "bg-indigo-50 text-indigo-600 border-none" },
-      inprogress: { label: "Хийгдэж буй", class: "bg-amber-50 text-amber-600 border-none" },
-      done: { label: "Дууссан", class: "bg-emerald-50 text-emerald-700 border-none" },
+    const config: Record<string, { labelKey: string; class: string }> = {
+      draft: { labelKey: 'state.draft', class: "bg-slate-100 text-slate-600 border-none" },
+      sent: { labelKey: 'state.sent', class: "bg-blue-50 text-blue-600 border-none" },
+      received: { labelKey: 'state.received', class: "bg-indigo-50 text-indigo-600 border-none" },
+      inprogress: { labelKey: 'state.inprogress', class: "bg-amber-50 text-amber-600 border-none" },
+      done: { labelKey: 'state.done', class: "bg-emerald-50 text-emerald-700 border-none" },
     };
-    const s = config[state] || { label: state, class: "bg-gray-100" };
-    return <Badge className={`${s.class} font-medium px-2.5 py-0.5 whitespace-nowrap`}>{s.label}</Badge>;
+    const s = config[state] || { labelKey: state, class: "bg-gray-100" };
+    return <Badge className={`${s.class} font-medium px-2.5 py-0.5 whitespace-nowrap`}>{t(s.labelKey)}</Badge>;
   };
 
   if (loading) {
@@ -136,10 +138,10 @@ export function DepartmentChecklist() {
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <CardTitle className="text-xl font-bold tracking-tight">Хэлтсийн хяналт</CardTitle>
-              <CardDescription>Таны хариуцсан хэлтсийн ажлын явц</CardDescription>
+              <CardTitle className="text-xl font-bold tracking-tight">{t('checklist.department.title')}</CardTitle>
+              <CardDescription>{t('checklist.department.description')}</CardDescription>
             </div>
-            <Badge variant="outline" className="h-fit">{jobs.length} ажил</Badge>
+            <Badge variant="outline" className="h-fit">{t('checklist.detail.jobsCount', { count: jobs.length })}</Badge>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -153,11 +155,11 @@ export function DepartmentChecklist() {
               <table className="w-full text-sm text-left">
                 <thead className="bg-muted/40 border-y text-muted-foreground font-medium">
                   <tr>
-                    <th className="px-6 py-3">Огноо</th>
-                    <th className="px-6 py-3">Салбар</th>
-                    <th className="px-6 py-3">Төрөл</th>
-                    <th className="px-6 py-3">Төлөв</th>
-                    <th className="px-6 py-3 text-right">Үйлдэл</th>
+                    <th className="px-6 py-3">{t('table.date')}</th>
+                    <th className="px-6 py-3">{t('table.branch')}</th>
+                    <th className="px-6 py-3">{t('table.type')}</th>
+                    <th className="px-6 py-3">{t('table.state')}</th>
+                    <th className="px-6 py-3 text-right">{t('table.action')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
@@ -192,8 +194,8 @@ export function DepartmentChecklist() {
       {groupedByConfig.length > 0 && (
         <Card className="border-none shadow-sm ring-1 ring-black/5">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-bold tracking-tight">Тохиргоогоор график</CardTitle>
-            <CardDescription>Тохиргоо бүрийн бүх ажлуудын нэгтгэсэн график</CardDescription>
+            <CardTitle className="text-lg font-bold tracking-tight">{t('checklist.department.configChart')}</CardTitle>
+            <CardDescription>{t('checklist.department.configChartDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border/60">
@@ -201,12 +203,12 @@ export function DepartmentChecklist() {
                 <div key={group.configId} className="p-4 hover:bg-muted/20 transition-colors flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-slate-900">{group.configName}</p>
-                    <p className="text-sm text-muted-foreground">{group.jobs.length} ажил</p>
+                    <p className="text-sm text-muted-foreground">{t('checklist.detail.jobsCount', { count: group.jobs.length })}</p>
                   </div>
                   <Button asChild variant="outline" size="sm" className="gap-2">
                     <Link href={`/dashboard/checklist-config-chart/${group.configId}`}>
                       <BarChart3 className="h-4 w-4" />
-                      График харах
+                      {t('checklist.department.viewChart')}
                     </Link>
                   </Button>
                 </div>
@@ -222,9 +224,9 @@ export function DepartmentChecklist() {
         <DialogHeader className="px-6 py-5 bg-white border-b sticky top-0 z-10">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
-              <DialogTitle className="text-xl font-bold text-slate-900">Ажлын дэлгэрэнгүй</DialogTitle>
+              <DialogTitle className="text-xl font-bold text-slate-900">{t('checklist.detail.title')}</DialogTitle>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>ID: #{selectedJobId}</span>
+                <span>{t('checklist.detail.id')}: #{selectedJobId}</span>
                 <span className="text-slate-300">•</span>
                 <span className="font-medium text-slate-700">{jobDetail?.date}</span>
               </div>
@@ -244,7 +246,7 @@ export function DepartmentChecklist() {
               <div className="h-12 w-12 rounded-full border-4 border-slate-100"></div>
               <div className="absolute top-0 left-0 h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
             </div>
-            <p className="text-sm font-medium text-slate-500 animate-pulse">Мэдээлэл татаж байна...</p>
+            <p className="text-sm font-medium text-slate-500 animate-pulse">{t('checklist.detail.loading')}</p>
           </div>
         ) : jobDetail ? (
           <div className="p-6 bg-slate-50/50 space-y-6 max-h-[65vh] overflow-y-auto">
@@ -257,7 +259,7 @@ export function DepartmentChecklist() {
                     <MapPin className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Салбар нэгж</p>
+                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">{t('checklist.detail.branch')}</p>
                     <p className="text-sm font-semibold text-slate-800 leading-tight">
                     {Array.isArray(jobDetail.branch_id) ? jobDetail.branch_id[1] : (jobDetail.branch_id || '-')}
                     </p>
@@ -271,7 +273,7 @@ export function DepartmentChecklist() {
                     <ClipboardList className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Тохиргоо</p>
+                    <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">{t('checklist.detail.config')}</p>
                     <p className="text-sm font-semibold text-slate-800 leading-tight">
                     {Array.isArray(jobDetail.checklist_conf_id) ? jobDetail.checklist_conf_id[1] : (jobDetail.checklist_conf_id || '-')}
                     </p>
@@ -284,7 +286,7 @@ export function DepartmentChecklist() {
             {jobDetail.responsible_ids && jobDetail.responsible_ids.length > 0 && (
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                  <User className="h-3.5 w-3.5" /> Хариуцсан баг
+                  <User className="h-3.5 w-3.5" /> {t('checklist.detail.responsible')}
                 </h4>
                 <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                   <div className="flex flex-wrap gap-2">
@@ -304,7 +306,7 @@ export function DepartmentChecklist() {
             {/* 3. SUMMARY (Quote style) */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span> Тайлбар
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span> {t('checklist.detail.summary')}
               </h4>
               <div className={`relative p-4 rounded-xl border border-l-4 shadow-sm ${
                 typeof jobDetail.summary === 'string' && jobDetail.summary.length > 0
@@ -317,7 +319,7 @@ export function DepartmentChecklist() {
                   </p>
                 ) : (
                   <p className="text-sm text-slate-400 italic flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" /> Тайлбар бичигдээгүй байна
+                    <AlertCircle className="h-4 w-4" /> {t('checklist.detail.noSummary')}
                   </p>
                 )}
               </div>
@@ -327,17 +329,17 @@ export function DepartmentChecklist() {
         ) : (
           <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground gap-2">
             <AlertCircle className="h-10 w-10 opacity-20" />
-            <p>Мэдээлэл олдсонгүй</p>
+            <p>{t('checklist.detail.notFound')}</p>
           </div>
         )}
 
         {/* FOOTER SECTION */}
         <div className="p-4 bg-white border-t flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setDetailOpen(false)} className="rounded-lg text-slate-500 hover:text-slate-900">
-                Хаах
+                {t('common.close')}
             </Button>
             <Button onClick={() => setDetailOpen(false)} className="rounded-lg px-6 shadow-lg shadow-primary/20">
-                Ойлголоо
+                {t('checklist.detail.understood')}
             </Button>
         </div>
       </DialogContent>

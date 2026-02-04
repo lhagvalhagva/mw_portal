@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalendarIcon, ChevronRight } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useLocale } from "@/contexts/LocaleContext"
 
 interface ChecklistJob {
     id: number
@@ -26,18 +27,19 @@ const statusColors: Record<string, "default" | "secondary" | "destructive" | "ou
     done: "secondary"
 }
 
-const statusLabels: Record<string, string> = {
-    draft: "Ноорог",
-    sent: "Илгээсэн",
-    received: "Хүлээн авсан",
-    inprogress: "Хийгдэж байгаа",
-    done: "Гүйцэтгэсэн"
-}
-
 export default function ChecklistListPage() {
+    const { t } = useLocale()
     const router = useRouter()
     const [jobs, setJobs] = useState<ChecklistJob[]>([])
     const [loading, setLoading] = useState(true)
+    
+    const statusLabels: Record<string, string> = {
+        draft: t('state.draft'),
+        sent: t('state.sent'),
+        received: t('checklist.list.received'),
+        inprogress: t('checklist.list.inprogress'),
+        done: t('checklist.list.done')
+    }
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -76,9 +78,9 @@ export default function ChecklistListPage() {
         <div className="flex-1 space-y-8 p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight gradient-text">Миний ажлууд</h2>
+                    <h2 className="text-3xl font-bold tracking-tight gradient-text">{t('checklist.list.title')}</h2>
                     <p className="text-muted-foreground">
-                        Танд хуваарилагдсан шалгах хуудаснууд
+                        {t('checklist.list.description')}
                     </p>
                 </div>
             </div>
@@ -86,7 +88,7 @@ export default function ChecklistListPage() {
             <div className="grid gap-4">
                 {jobs.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground">
-                        Одоогоор танд хуваарилагдсан ажил алга байна.
+                        {t('checklist.list.empty')}
                     </div>
                 ) : (
                     jobs.map((job) => (

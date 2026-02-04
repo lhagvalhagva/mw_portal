@@ -9,19 +9,19 @@ import {
   BarChart3, Calendar, ShieldCheck
 } from "lucide-react";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useLocale } from "@/contexts/LocaleContext";
 
-const routes = [
-  { label: 'Хяналтын самбар', icon: LayoutDashboard, href: '/dashboard' },
-  // { label: 'Хүний нөөц', icon: Users, href: '/employees' },
-  // { label: 'Борлуулалт', icon: Package, href: '/sales' },
-  // { label: 'Тайлан', icon: BarChart3, href: '/reports' },
-  { label: 'Checklist', icon: Calendar, href: '/checklist' },
-  // { label: 'Тохиргоо', icon: Settings, href: '/settings' },
+const routeKeys = [
+  { key: 'sidebar.dashboard', icon: LayoutDashboard, href: '/dashboard' },
+  { key: 'sidebar.checklist', icon: Calendar, href: '/checklist' },
 ];
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { isOpen } = useSidebar();
+  const { t } = useLocale();
+  
+  const routes = routeKeys.map(r => ({ ...r, label: t(r.key) }));
 
   return (
     <div className={cn("flex flex-col h-full transition-all duration-300", isOpen ? "w-72" : "w-[70px]", className)}>
@@ -68,8 +68,8 @@ export function Sidebar({ className }: { className?: string }) {
       {/* Sidebar-ын доод хэсэг */}
       <div className={cn("p-4 mt-auto", !isOpen && "hidden")}>
         <div className="bg-muted/50 rounded-2xl p-4 border border-dashed border-primary/20 content-center">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Систем:</p>
-          <p className="text-xs font-semibold">Хувилбар 1.0.1 (Beta)</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t('sidebar.system')}</p>
+          <p className="text-xs font-semibold">{t('sidebar.version')}</p>
         </div>
       </div>
     </div>

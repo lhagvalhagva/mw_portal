@@ -7,8 +7,10 @@ import DepartmentChecklistChartWidget from "@/components/dashboard/DepartmentChe
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export default function ChecklistConfigChartPage() {
+  const { t } = useLocale();
   const params = useParams();
   const configId = Number(params?.config_id ?? 0);
   const [baseUrl, setBaseUrl] = useState<string | null>(null);
@@ -23,7 +25,7 @@ export default function ChecklistConfigChartPage() {
   if (!mounted) {
     return (
       <div className="flex min-h-[200px] items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">Ачаалж байна...</p>
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       </div>
     );
   }
@@ -31,9 +33,9 @@ export default function ChecklistConfigChartPage() {
   if (!baseUrl) {
     return (
       <div className="space-y-4 p-6">
-        <p className="text-muted-foreground">Нэвтрээгүй байна. График харахын тулд эхлээд нэвтрэнэ үү.</p>
+        <p className="text-muted-foreground">{t('auth.notLoggedIn')}</p>
         <Button asChild variant="outline">
-          <Link href="/auth/login">Нэвтрэх</Link>
+          <Link href="/auth/login">{t('auth.login')}</Link>
         </Button>
       </div>
     );
@@ -42,9 +44,9 @@ export default function ChecklistConfigChartPage() {
   if (!configId || Number.isNaN(configId)) {
     return (
       <div className="space-y-4 p-6">
-        <p className="text-destructive">Тохиргооны ID буруу байна.</p>
+        <p className="text-destructive">{t('chart.config.invalidId')}</p>
         <Button asChild variant="outline">
-          <Link href="/dashboard">Буцах</Link>
+          <Link href="/dashboard">{t('common.back')}</Link>
         </Button>
       </div>
     );
@@ -56,12 +58,12 @@ export default function ChecklistConfigChartPage() {
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard">
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Буцах</span>
+            <span className="sr-only">{t('common.back')}</span>
           </Link>
         </Button>
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Тохиргооны график</h1>
-          <p className="text-sm text-muted-foreground">Тохиргоо #{configId} — бүх ажлуудын нэгтгэсэн график</p>
+          <h1 className="text-xl font-bold tracking-tight">{t('chart.config.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('chart.config.description', { id: configId })}</p>
         </div>
       </div>
 

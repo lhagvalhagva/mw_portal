@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { DepartmentChecklist } from "@/components/dashboard/DepartmentChecklist";
 import { checklistAPI } from "@/lib/apiClient";
 import { Loader2 } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
 
 interface DashboardStats {
   totalJobs: number;
@@ -16,6 +17,7 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
+  const { t } = useLocale();
   const [stats, setStats] = useState<DashboardStats>({
     totalJobs: 0,
     doneJobs: 0,
@@ -58,29 +60,29 @@ export default function DashboardPage() {
 
   const statCards = [
     { 
-      label: "Нийт ажил", 
-      value: loading ? "..." : stats.totalJobs.toString(), 
+      label: t('dashboard.totalJobs'), 
+      value: loading ? t('common.loading') : stats.totalJobs.toString(), 
       icon: ClipboardList, 
       color: "text-blue-500", 
       bg: "bg-blue-50" 
     },
     { 
-      label: "Дууссан", 
-      value: loading ? "..." : stats.doneJobs.toString(), 
+      label: t('dashboard.doneJobs'), 
+      value: loading ? t('common.loading') : stats.doneJobs.toString(), 
       icon: CheckCircle, 
       color: "text-green-500", 
       bg: "bg-green-50" 
     },
     { 
-      label: "Хийгдэж буй", 
-      value: loading ? "..." : stats.inProgressJobs.toString(), 
+      label: t('dashboard.inProgressJobs'), 
+      value: loading ? t('common.loading') : stats.inProgressJobs.toString(), 
       icon: Clock, 
       color: "text-yellow-500", 
       bg: "bg-yellow-50" 
     },
     { 
-      label: "Илгээсэн", 
-      value: loading ? "..." : stats.sentJobs.toString(), 
+      label: t('dashboard.sentJobs'), 
+      value: loading ? t('common.loading') : stats.sentJobs.toString(), 
       icon: AlertCircle, 
       color: "text-orange-500", 
       bg: "bg-orange-50" 
@@ -91,8 +93,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Мэндчилгээ */}
       <div>
-        <h1 className="text-2xl font-black text-foreground">Өдрийн мэнд! 👋</h1>
-        <p className="text-muted-foreground text-sm">Өнөөдрийн байдлаар системийн ерөнхий үзүүлэлтүүд ийм байна.</p>
+        <h1 className="text-2xl font-black text-foreground">{t('dashboard.greeting')}</h1>
+        <p className="text-muted-foreground text-sm">{t('dashboard.description')}</p>
       </div>
 
       {/* Статистик картууд */}

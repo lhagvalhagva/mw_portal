@@ -1,5 +1,6 @@
 // app/layout.tsx
 import { Toaster } from "@/components/ui/sonner";
+import { LocaleProvider } from "@/contexts/LocaleContext";
 import "./globals.css";
 
 export default function RootLayout({
@@ -10,8 +11,10 @@ export default function RootLayout({
   return (
     <html lang="mn">
       <body>
-        {children}
-        <Toaster position="top-center" richColors />
+        <LocaleProvider>
+          {children}
+          <Toaster position="top-center" richColors />
+        </LocaleProvider>
       </body>
     </html>
   );

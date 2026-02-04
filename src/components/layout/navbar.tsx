@@ -5,10 +5,12 @@ import { UserNav } from "@/components/layout/user-nav";
 import { AttendanceNav } from "@/components/layout/attendance-nav";
 import { NotificationNav } from "@/components/layout/notification-nav";
 import { MobileSidebar } from "@/components/layout/mobile-sidebar";
+import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 import { Input } from "@/components/ui/input";
 import { Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/hooks/use-sidebar";
+import { useLocale } from "@/contexts/LocaleContext";
 
 export function Navbar() {
   const { toggle } = useSidebar();
@@ -21,6 +23,12 @@ export function Navbar() {
   if (!mounted) {
     return <header className="h-16 border-b bg-white/60 dark:bg-card/60 backdrop-blur-xl" />;
   }
+
+  return <NavbarContent toggle={toggle} />;
+}
+
+function NavbarContent({ toggle }: { toggle: () => void }) {
+  const { t } = useLocale();
 
   return (
     <header className="h-16 border-b bg-white/60 dark:bg-card/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-6 sticky top-0 z-40 border-white/20">
@@ -44,7 +52,7 @@ export function Navbar() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
           <Input
             type="text"
-            placeholder="Хайх..."
+            placeholder={t('common.search')}
             className="pl-10 h-10 bg-white/20 dark:bg-white/5 border-white/10 dark:border-white/5 backdrop-blur-md rounded-xl focus-visible:ring-primary/20 transition-all outline-none"
           />
         </div>
@@ -53,6 +61,7 @@ export function Navbar() {
       {/* Баруун талын цэсүүд */}
       <div className="flex items-center gap-2 md:gap-4">
         {/* Ирц бүртгэл, Мэдэгдэл, Хэрэглэгчийн мэдээлэл */}
+        <LocaleSwitcher />
         <AttendanceNav />
         <NotificationNav />
         <UserNav />

@@ -13,6 +13,7 @@ import {
   YAxis,
   Legend,
 } from "recharts";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type ColumnType = "text" | "boolean" | "time" | "many2one" | "selection" | "image" | "date";
 
@@ -82,6 +83,7 @@ export default function DepartmentChecklistChartWidget({
   getDepartmentDetail,
   getDepartmentConfigChart,
 }: Props) {
+  const { t } = useLocale();
   const today = useMemo(() => new Date(), []);
   const [from, setFrom] = useState<string>(() => toISODate(new Date(today.getFullYear(), today.getMonth(), 1)));
   const [to, setTo] = useState<string>(() => toISODate(today));
@@ -281,7 +283,7 @@ export default function DepartmentChecklistChartWidget({
           disabled={loading}
           className="h-9 rounded-lg border border-input bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
-          {loading ? "Ачаалж байна..." : "Ачаалах"}
+          {loading ? t('chart.loading') : t('chart.load')}
         </button>
         {err ? <span className="text-sm text-destructive">{err}</span> : null}
       </div>
@@ -289,15 +291,15 @@ export default function DepartmentChecklistChartWidget({
       <div className="mt-4 h-[360px]">
         {!detail ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Ачаалах товч дарж өгөгдөл татана уу.
+            {t('chart.noData')}
           </div>
         ) : !table ? (
           <div className="flex h-full items-center justify-center text-sm text-destructive">
-            json_data задлахад алдаа гарлаа.
+            {t('chart.parseError')}
           </div>
         ) : series.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Сонгосон хугацаанд өгөгдөл олдсонгүй.
+            {t('chart.noDataInRange')}
           </div>
         ) : kindToRender === "line" ? (
           <ResponsiveContainer width="100%" height="100%">
