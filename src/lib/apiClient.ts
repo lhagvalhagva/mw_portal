@@ -101,6 +101,15 @@ export const authAPI = {
       return { status: 'error', message: 'API not available' };
     }
   },
+
+  getMe: async (baseUrl: string): Promise<{ status: string; data?: { uid: number; name: string; is_group_user: boolean }; message?: string }> => {
+    try {
+      const res = await jsonRpc(baseUrl, '/api/auth/me') as { status: string; data?: { uid: number; name: string; is_group_user: boolean }; message?: string };
+      return res;
+    } catch {
+      return { status: 'error', message: 'API not available' };
+    }
+  },
 };
 export const attendanceAPI = {
   /**
@@ -147,7 +156,6 @@ export const checklistAPI = {
   getList: async (baseUrl: string) => {
     try {
       const data = await jsonRpc(baseUrl, '/api/checklist/list') as { status?: string; data?: unknown; message?: string };
-      console.log('data', data);
       if (data.status === 'success') return { success: true, data: data.data };
       return { success: false, message: data.message || 'Error fetching checklist list' };
     } catch (error) {
@@ -156,12 +164,79 @@ export const checklistAPI = {
     }
   },
 
+  getMyDepartments: async (baseUrl: string) => {
+    try {
+      const data = await jsonRpc(baseUrl, '/api/checklist/my-departments') as { status?: string; data?: { id: number; name: string }[]; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data || [] };
+      return { success: false, message: data.message || 'Error fetching my departments' };
+    } catch (error) {
+      console.error('My departments error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  getDepartmentBranches: async (baseUrl: string, departmentId: number) => {
+    try {
+      const data = await jsonRpc(baseUrl, `/api/checklist/department/${departmentId}/branches`) as { status?: string; data?: { id: number; name: string }[]; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data || [] };
+      return { success: false, message: data.message || 'Error fetching branches' };
+    } catch (error) {
+      console.error('Department branches error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  getBranchConfigs: async (baseUrl: string, branchId: number) => {
+    try {
+      const data = await jsonRpc(baseUrl, `/api/checklist/branch/${branchId}/configs`) as { status?: string; data?: { id: number; name: string }[]; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data || [] };
+      return { success: false, message: data.message || 'Error fetching configs' };
+    } catch (error) {
+      console.error('Branch configs error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  getBranchJobs: async (baseUrl: string, branchId: number) => {
+    try {
+      const data = await jsonRpc(baseUrl, `/api/checklist/branch/${branchId}/jobs`) as { status?: string; data?: unknown[]; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data || [] };
+      return { success: false, message: data.message || 'Error fetching branch jobs' };
+    } catch (error) {
+      console.error('Branch jobs error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  getChecklistUsers: async (baseUrl: string) => {
+    try {
+      const data = await jsonRpc(baseUrl, '/api/checklist/users') as { status?: string; data?: { id: number; name: string }[]; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data || [] };
+      return { success: false, message: data.message || 'Error fetching users' };
+    } catch (error) {
+      console.error('Checklist users error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
+  createJob: async (
+    baseUrl: string,
+    payload: { branch_id: number; checklist_conf_id?: number; date: string; summary?: string; responsible_user_ids?: number[] }
+  ) => {
+    try {
+      const data = await jsonRpc(baseUrl, '/api/checklist/job/create', payload) as { status?: string; data?: { id: number }; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
+      return { success: false, message: data.message || 'Error creating job' };
+    } catch (error) {
+      console.error('Create job error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
   getDepartmentList: async (baseUrl: string) => {
     try {
       const data = await jsonRpc(baseUrl, '/api/checklist/department/list') as { status?: string; data?: unknown; message?: string };
-      console.log('data', data);
       if (data.status === 'success') return { success: true, data: data.data };
-      console.log('data', data);
       return { success: false, message: data.message || 'Error fetching department checklist' };
     } catch (error) {
       console.error('Department checklist error:', error);
@@ -176,17 +251,6 @@ export const checklistAPI = {
       return { success: false, message: data.message || 'Error fetching department checklist detail' };
     } catch (error) {
       console.error('Department checklist detail error:', error);
-      return { success: false, message: 'Network error' };
-    }
-  },
-
-  getDepartmentConfigChart: async (baseUrl: string, configId: number) => {
-    try {
-      const data = await jsonRpc(baseUrl, `/api/checklist/department/config/${configId}/chart`) as { status?: string; data?: unknown; message?: string };
-      if (data.status === 'success') return { success: true, data: data.data };
-      return { success: false, message: data.message || 'Error fetching config chart data' };
-    } catch (error) {
-      console.error('Department config chart error:', error);
       return { success: false, message: 'Network error' };
     }
   },

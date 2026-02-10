@@ -11,18 +11,21 @@ import {
 } from "lucide-react";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useAuth } from "@/hooks/useAuth";
 
-const routeKeys = [
+const routeKeys: { key: string; icon: typeof LayoutDashboard; href: string; showOnlyForGroupUser?: boolean }[] = [
   { key: 'sidebar.dashboard', icon: LayoutDashboard, href: '/dashboard' },
   { key: 'sidebar.checklist', icon: Calendar, href: '/checklist' },
+  { key: 'sidebar.internal', icon: Users, href: '/dashboard/internal', showOnlyForGroupUser: true },
 ];
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const { isOpen } = useSidebar();
   const { t } = useLocale();
-  
-  const routes = routeKeys.map(r => ({ ...r, label: t(r.key) }));
+  const { isGroupUser } = useAuth(false);
+  const visibleRoutes = routeKeys.filter(r => !r.showOnlyForGroupUser || isGroupUser);
+  const routes = visibleRoutes.map(r => ({ ...r, label: t(r.key) }));
 
   return (
     <div className={cn("flex flex-col h-full transition-all duration-300", isOpen ? "w-72" : "w-[70px]", className)}>

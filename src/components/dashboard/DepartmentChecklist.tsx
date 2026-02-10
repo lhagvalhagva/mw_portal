@@ -7,8 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, AlertCircle, MapPin, ClipboardList, ChevronRight, User, ChevronLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { BarChart3 } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
 
 interface ChecklistJob {
@@ -92,24 +90,6 @@ export function DepartmentChecklist() {
       setDetailLoading(false);
     }
   };
-
-  const groupedByConfig = useMemo(() => {
-    const groups: Record<number, { configName: string; configId: number; jobs: ChecklistJob[] }> = {};
-    jobs.forEach((job) => {
-      const configId = Array.isArray(job.checklist_conf_id) ? job.checklist_conf_id[0] : null;
-      if (configId && typeof configId === 'number') {
-        if (!groups[configId]) {
-          groups[configId] = {
-            configId,
-            configName: Array.isArray(job.checklist_conf_id) ? job.checklist_conf_id[1] : String(configId),
-            jobs: []
-          };
-        }
-        groups[configId].jobs.push(job);
-      }
-    });
-    return Object.values(groups);
-  }, [jobs]);
 
   const paginatedJobs = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -263,33 +243,6 @@ export function DepartmentChecklist() {
           )}
         </CardContent>
       </Card>
-
-      {groupedByConfig.length > 0 && (
-        <Card className="border-none shadow-sm ring-1 ring-black/5">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-bold tracking-tight">{t('checklist.department.configChart')}</CardTitle>
-            <CardDescription>{t('checklist.department.configChartDesc')}</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y divide-border/60">
-              {groupedByConfig.map((group) => (
-                <div key={group.configId} className="p-4 hover:bg-muted/20 transition-colors flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-slate-900">{group.configName}</p>
-                    <p className="text-sm text-muted-foreground">{t('checklist.detail.jobsCount', { count: group.jobs.length })}</p>
-                  </div>
-                  <Button asChild variant="outline" size="sm" className="gap-2">
-                    <Link href={`/dashboard/checklist-config-chart/${group.configId}`}>
-                      <BarChart3 className="h-4 w-4" />
-                      {t('checklist.department.viewChart')}
-                    </Link>
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
     <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
       <DialogContent className="max-w-[600px] p-0 overflow-hidden gap-0 border-none shadow-2xl">

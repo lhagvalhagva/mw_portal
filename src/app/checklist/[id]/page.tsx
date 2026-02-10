@@ -58,12 +58,13 @@ export default function ChecklistDetailPage() {
     const handleUpdate = async (newData: any, status: 'inprogress' | 'done') => {
         setSaving(true)
         try {
+            const rows = newData.rows || []
             const payload = {
                 json_data: {
-                    columns: data.json_data.columns, // Maintain columns
-                    rows: newData.rows // Update rows
+                    columns: data.json_data.columns,
+                    rows: rows
                 },
-                state: status,
+                state: status === 'done' ? 'done' : 'draft',
                 summary: summary
             }
 
@@ -75,12 +76,12 @@ export default function ChecklistDetailPage() {
             }
             const response = await checklistAPI.update(baseUrl, id, payload)
             if (response.success) {
-                toast.success(status === 'done' ? "Амжилттай илгээлээ" : "Хадгалагдлаа")
-                if (status === 'done') {
+                const isDone = status === 'done'
+                toast.success(isDone ? "Амжилттай илгээлээ" : "Хадгалагдлаа")
+                if (isDone) {
                     router.push('/checklist')
                 } else {
-                    // Refresh local state if needed
-                    setData({ ...data, state: 'inprogress' })
+                    setData({ ...data, state: 'draft' })
                 }
             } else {
                 toast.error("Алдаа", { description: response.message })

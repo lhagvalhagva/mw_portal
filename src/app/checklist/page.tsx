@@ -1,11 +1,11 @@
 // checklist/page.tsx
 "use client"
 
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { checklistAPI } from "@/lib/apiClient"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { CalendarIcon, ChevronRight } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLocale } from "@/contexts/LocaleContext"
@@ -91,38 +91,44 @@ export default function ChecklistListPage() {
                         {t('checklist.list.empty')}
                     </div>
                 ) : (
-                    jobs.map((job) => (
+                    jobs.map((job) => {
+                        const isDraft = job.state === 'draft'
+                        return (
                         <Card
                             key={job.id}
-                            className="cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99] transition-transform"
+                            className={`cursor-pointer hover:shadow-md transition-shadow active:scale-[0.99] transition-transform overflow-hidden min-w-0 ${isDraft ? 'border-2 border-amber-500/70 bg-amber-50/80 dark:bg-amber-950/30 dark:border-amber-500/50' : ''}`}
                             onClick={() => router.push(`/checklist/${job.id}`)}
                         >
-                            <CardContent className="p-6 flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="font-semibold text-lg">{job.checklist_conf_id[1]}</h3>
-                                        <Badge variant={statusColors[job.state]}>
+                            <CardContent className="p-6 flex items-center justify-between gap-4 min-w-0">
+                                <div className="space-y-1 min-w-0 flex-1 overflow-hidden">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <h3 className={`font-semibold text-lg truncate shrink-0 ${isDraft ? 'text-amber-800 dark:text-amber-200' : ''}`}>{job.checklist_conf_id[1]}</h3>
+                                        <Badge
+                                            variant={statusColors[job.state]}
+                                            className={`shrink-0 ${isDraft ? 'bg-amber-500 hover:bg-amber-600 text-white border-0 font-semibold' : ''}`}
+                                        >
                                             {statusLabels[job.state] || job.state}
                                         </Badge>
                                     </div>
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        <span className="flex items-center gap-1">
+                                    <div className="flex items-center gap-4 text-sm text-muted-foreground min-w-0">
+                                        <span className="flex items-center gap-1 shrink-0">
                                             <CalendarIcon className="w-4 h-4" />
                                             {job.date}
                                         </span>
                                         <span>•</span>
-                                        <span>{job.branch_id[1]}</span>
+                                        <span className="truncate">{job.branch_id[1]}</span>
                                     </div>
                                     {job.summary && (
-                                        <p className="text-sm text-muted-foreground line-clamp-1">
+                                        <p className="text-sm text-muted-foreground line-clamp-1 min-w-0 break-words overflow-hidden">
                                             {job.summary}
                                         </p>
                                     )}
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                                <ChevronRight className={`w-5 h-5 shrink-0 ${isDraft ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`} />
                             </CardContent>
                         </Card>
-                    ))
+                        )
+                    })
                 )}
             </div>
         </div>

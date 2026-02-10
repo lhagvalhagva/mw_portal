@@ -19,9 +19,11 @@ interface DynamicTableProps {
     onSave?: (rows: any[]) => void
     onSubmit?: (rows: any[]) => void
     readOnly?: boolean
+    /** ERP-ийн мөр төлөв, илгээсэн хүн багана (Миний хэлтэс) */
+    showRowMeta?: boolean
 }
 
-export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }: DynamicTableProps) {
+export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false, showRowMeta = false }: DynamicTableProps) {
     const { t } = useLocale();
     const [rows, setRows] = useState(initialData.rows)
     const columns = initialData.columns
@@ -58,6 +60,12 @@ export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }
                                         {col.name}
                                     </th>
                                 ))}
+                                {showRowMeta && (
+                                    <>
+                                        <th className="px-6 py-4 min-w-[100px] border-b border-l font-bold text-muted-foreground text-[11px] uppercase tracking-wider bg-inherit">{t('checklist.table.rowState')}</th>
+                                        <th className="px-6 py-4 min-w-[180px] border-b border-l font-bold text-muted-foreground text-[11px] uppercase tracking-wider bg-inherit">{t('checklist.table.sentTo')}</th>
+                                    </>
+                                )}
                             </tr>
                         </thead>
                         <tbody className="divide-y bg-background">
@@ -74,6 +82,12 @@ export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }
                                             <EditableCell type={col.type} value={row[col.name]} options={col.options} onChange={(val) => handleUpdate(idx, col.name, val)} />
                                         </td>
                                     ))}
+                                    {showRowMeta && (
+                                        <>
+                                            <td className="px-2 py-2 border-l border-b align-top text-sm">{row.__state_display ?? '–'}</td>
+                                            <td className="px-2 py-2 border-l border-b align-top text-sm text-muted-foreground whitespace-normal break-words">{row.__sent_to_users_display ?? '–'}</td>
+                                        </>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
@@ -95,6 +109,18 @@ export function DynamicTable({ initialData, onSave, onSubmit, readOnly = false }
                                         <EditableCell type={col.type} value={row[col.name]} options={col.options} isMobile onChange={(val) => handleUpdate(idx, col.name, val)} />
                                     </div>
                                 ))}
+                                {showRowMeta && (
+                                    <>
+                                        <div className="space-y-1.5 pt-2 border-t">
+                                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t('checklist.table.rowState')}</label>
+                                            <p className="text-sm">{row.__state_display ?? '–'}</p>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t('checklist.table.sentTo')}</label>
+                                            <p className="text-sm text-muted-foreground">{row.__sent_to_users_display ?? '–'}</p>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}
