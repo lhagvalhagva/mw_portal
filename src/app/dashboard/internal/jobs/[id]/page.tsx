@@ -74,19 +74,22 @@ export default function InternalJobDetailPage() {
       return;
     }
     try {
+      const currentJson = data.json_data || { columns: [], rows: [] };
       const payload = {
         json_data: {
-          columns: data.json_data?.columns,
-          rows: newData.rows ?? data.json_data?.rows ?? [],
+          columns: currentJson.columns,
+          rows: newData.rows ?? currentJson.rows ?? [],
+          __sent_sequences: (currentJson as { __sent_sequences?: unknown[] }).__sent_sequences,
         },
-        state: status === "done" ? "done" : "draft",
         summary,
+        ...(status === "done" && { state: "done" }),
       };
-      const response = await checklistAPI.update(baseUrl, id, payload);
+      const response = await checklistAPI.updateDepartmentJob(baseUrl, id, payload);
       if (response.success) {
+        const resData = response.data as { state?: string; json_data?: typeof data.json_data };
         toast.success(status === "done" ? t("checklist.detail.understood") : "Хадгалагдлаа");
+        setData((prev) => (prev ? { ...prev, state: resData.state ?? prev.state, json_data: resData.json_data ?? prev.json_data } : prev));
         if (status === "done") router.push("/dashboard/internal");
-        else setData({ ...data, state: "draft" });
       } else {
         toast.error("Алдаа", { description: response.message });
       }

@@ -255,6 +255,21 @@ export const checklistAPI = {
     }
   },
 
+  updateDepartmentJob: async (
+    baseUrl: string,
+    id: number,
+    payload: { json_data?: unknown; summary?: string; state?: string }
+  ) => {
+    try {
+      const data = await jsonRpc(baseUrl, `/api/checklist/department/${id}/update`, payload) as { status?: string; data?: unknown; message?: string };
+      if (data.status === 'success') return { success: true, data: data.data };
+      return { success: false, message: data.message || 'Error updating department job' };
+    } catch (error) {
+      console.error('Department job update error:', error);
+      return { success: false, message: 'Network error' };
+    }
+  },
+
   getNotifications: async (baseUrl: string) => {
     try {
       const data = await jsonRpc(baseUrl, '/api/checklist/notifications') as { status?: string; data?: { count: number; jobs: unknown[] }; message?: string };
