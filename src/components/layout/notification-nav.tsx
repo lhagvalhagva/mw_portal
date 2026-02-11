@@ -19,7 +19,8 @@ export function NotificationNav() {
                 if (!baseUrl) return;
                 const response = await checklistAPI.getNotifications(baseUrl);
                 if (response.success && response.data) {
-                    setNotifications(response.data);
+                    const data = response.data as { count: number; jobs: unknown[] };
+                    setNotifications({ count: data.count ?? 0, jobs: Array.isArray(data.jobs) ? data.jobs : [] });
                 }
             } catch (error) {
                 console.error('Failed to fetch notifications:', error);
@@ -27,7 +28,7 @@ export function NotificationNav() {
         };
 
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+        const interval = setInterval(fetchNotifications, 30000);
         return () => clearInterval(interval);
     }, []);
 

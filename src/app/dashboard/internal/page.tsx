@@ -29,7 +29,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-// --- Types ---
 type Dept = { id: number; name: string };
 type Branch = { id: number; name: string };
 type Config = { id: number; name: string };
@@ -44,7 +43,8 @@ interface ChecklistJob {
   summary: string;
 }
 
-// --- Helpers ---
+const STORAGE_KEYS = { dept: "internal_selected_dept", branch: "internal_selected_branch" };
+
 const statusStyles: Record<string, string> = {
   draft: "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800",
   sent: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
@@ -53,36 +53,27 @@ const statusStyles: Record<string, string> = {
   done: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
 };
 
-// --- Main Component ---
 export default function InternalPage() {
   const { t } = useLocale();
   const { isGroupUser, isLoading: authLoading } = useAuth(false);
   const router = useRouter();
   const baseUrl = typeof window !== "undefined" ? localStorage.getItem("rememberMeBaseUrl") : null;
 
-  // Data State
   const [departments, setDepartments] = useState<Dept[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [jobs, setJobs] = useState<ChecklistJob[]>([]);
-  
-  // Selection State
   const [selectedDept, setSelectedDept] = useState<Dept | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
-
-  // UI State
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const STORAGE_KEYS = { dept: "internal_selected_dept", branch: "internal_selected_branch" };
-
-  // --- Effects ---
   useEffect(() => {
     if (!authLoading && !isGroupUser) router.replace("/dashboard");
   }, [isGroupUser, authLoading, router]);
 
-  // Restore branch when returning from job detail
   useEffect(() => {
     if (!isGroupUser || departments.length === 0) return;
+    let tid: ReturnType<typeof setTimeout> | undefined;
     try {
       const savedDept = typeof window !== "undefined" ? sessionStorage.getItem(STORAGE_KEYS.dept) : null;
       const savedBranch = typeof window !== "undefined" ? sessionStorage.getItem(STORAGE_KEYS.branch) : null;
@@ -90,60 +81,62 @@ export default function InternalPage() {
         const dept = JSON.parse(savedDept) as Dept;
         const branch = JSON.parse(savedBranch) as Branch;
         if (dept?.id && branch?.id) {
-          setSelectedDept(dept);
-          setSelectedBranch(branch);
+          tid = setTimeout(() => {
+            setSelectedDept(dept);
+            setSelectedBranch(branch);
+          }, 0);
         }
         sessionStorage.removeItem(STORAGE_KEYS.dept);
         sessionStorage.removeItem(STORAGE_KEYS.branch);
       }
-    } catch (_) {}
+    } catch {
+      // ignore parse/storage errors
+    }
+    return () => { if (tid != null) clearTimeout(tid); };
   }, [isGroupUser, departments.length]);
 
-  // Initial Load (Departments)
   useEffect(() => {
     if (!isGroupUser || !baseUrl) return;
-    setLoading(true);
+    const tid = setTimeout(() => setLoading(true), 0);
     checklistAPI.getMyDepartments(baseUrl)
       .then((res) => res.success && Array.isArray(res.data) && setDepartments(res.data))
       .finally(() => setLoading(false));
+    return () => clearTimeout(tid);
   }, [isGroupUser, baseUrl]);
 
-  // Load Branches
   useEffect(() => {
     if (!selectedDept || !baseUrl) {
-      setBranches([]);
-      return;
+      const tid = setTimeout(() => setBranches([]), 0);
+      return () => clearTimeout(tid);
     }
-    setLoading(true);
+    const tid = setTimeout(() => setLoading(true), 0);
     checklistAPI.getDepartmentBranches(baseUrl, selectedDept.id)
       .then((res) => res.success && Array.isArray(res.data) && setBranches(res.data))
       .finally(() => setLoading(false));
+    return () => clearTimeout(tid);
   }, [selectedDept, baseUrl]);
 
-  // Load Jobs
   useEffect(() => {
     if (!selectedBranch || !baseUrl) {
-      setJobs([]);
-      return;
+      const tid = setTimeout(() => setJobs([]), 0);
+      return () => clearTimeout(tid);
     }
-    setLoading(true);
+    const tid = setTimeout(() => setLoading(true), 0);
     checklistAPI.getBranchJobs(baseUrl, selectedBranch.id)
       .then((res) => res.success && Array.isArray(res.data) && setJobs(res.data as ChecklistJob[]))
       .finally(() => setLoading(false));
+    return () => clearTimeout(tid);
   }, [selectedBranch, baseUrl]);
 
-  // --- Derived State (Kanban Grouping) ---
   const groupedJobs = useMemo(() => {
     const groups: Record<string, ChecklistJob[]> = {};
     jobs.forEach((job) => {
       if (!groups[job.date]) groups[job.date] = [];
       groups[job.date].push(job);
     });
-    // Sort dates descending (newest first)
     return Object.entries(groups).sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
   }, [jobs]);
 
-  // --- Handlers ---
   const handleBack = () => {
     if (selectedBranch) {
       setSelectedBranch(null);
@@ -215,21 +208,18 @@ export default function InternalPage() {
             <span>{t("internal.loading")}</span>
           </div>
         ) : !selectedDept ? (
-          /* Level 1: Select Department */
           <SelectionGrid 
             items={departments} 
             onSelect={setSelectedDept} 
             icon={<Building2 className="h-5 w-5 text-primary" />} 
           />
         ) : !selectedBranch ? (
-          /* Level 2: Select Branch */
           <SelectionGrid 
             items={branches} 
             onSelect={setSelectedBranch} 
             icon={<MapPin className="h-5 w-5 text-primary" />} 
           />
         ) : (
-          /* Level 3: Kanban Board */
           <ScrollArea className="h-full w-full rounded-md border bg-muted/20">
             <div className="flex gap-4 p-4 min-w-max">
               {groupedJobs.length === 0 ? (
@@ -275,9 +265,7 @@ export default function InternalPage() {
   );
 }
 
-// --- Sub-Components ---
-
-function SelectionGrid({ items, onSelect, icon }: { items: any[], onSelect: (item: any) => void, icon: React.ReactNode }) {
+function SelectionGrid<T extends { id: number; name: string }>({ items, onSelect, icon }: { items: T[]; onSelect: (item: T) => void; icon: React.ReactNode }) {
   if (items.length === 0) return <div className="p-4 text-muted-foreground">No items found.</div>;
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-full p-1">
@@ -300,7 +288,7 @@ function SelectionGrid({ items, onSelect, icon }: { items: any[], onSelect: (ite
   );
 }
 
-function JobCard({ job, t, onClick }: { job: ChecklistJob; t: any; onClick: () => void }) {
+function JobCard({ job, t, onClick }: { job: ChecklistJob; t: (key: string) => string; onClick: () => void }) {
   const confName = Array.isArray(job.checklist_conf_id) ? job.checklist_conf_id[1] : `ID: ${job.checklist_conf_id}`;
   const isDraft = job.state === "draft";
   const stateColor = statusStyles[job.state] || "bg-gray-100 text-gray-800";
@@ -334,13 +322,20 @@ function JobCard({ job, t, onClick }: { job: ChecklistJob; t: any; onClick: () =
   );
 }
 
-// --- Create Dialog (Refactored) ---
+interface CreateJobDialogProps {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  branchId: number;
+  branchName: string;
+  baseUrl: string;
+  onSuccess: (job: ChecklistJob) => void;
+  t: (k: string) => string;
+}
 
-function CreateJobDialog({ open, onOpenChange, branchId, branchName, baseUrl, onSuccess, t }: any) {
+function CreateJobDialog({ open, onOpenChange, branchId, branchName, baseUrl, onSuccess, t }: CreateJobDialogProps) {
   const [configs, setConfigs] = useState<Config[]>([]);
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(false);
-  
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
     configId: "",
@@ -355,8 +350,8 @@ function CreateJobDialog({ open, onOpenChange, branchId, branchName, baseUrl, on
     setForm(f => ({ ...f, configId: "", summary: "", responsibleIds: [], searchUser: "" }));
     
     // Fetch dependencies
-    checklistAPI.getBranchConfigs(baseUrl, branchId).then(r => r.success && setConfigs(r.data ?? []));
-    checklistAPI.getChecklistUsers(baseUrl).then(r => r.success && setUsers(r.data ?? []));
+    checklistAPI.getBranchConfigs(baseUrl, branchId).then(r => r.success && Array.isArray(r.data) && setConfigs(r.data as Config[]));
+    checklistAPI.getChecklistUsers(baseUrl).then(r => r.success && Array.isArray(r.data) && setUsers(r.data as UserItem[]));
   }, [open, branchId, baseUrl]);
 
   const handleSubmit = async () => {
@@ -372,19 +367,20 @@ function CreateJobDialog({ open, onOpenChange, branchId, branchName, baseUrl, on
         responsible_user_ids: form.responsibleIds.length ? form.responsibleIds : undefined,
       });
 
-      if (res.success && res.data?.id) {
+      const data = res.success ? (res.data as { id?: number } | undefined) : undefined;
+      if (data?.id) {
         toast.success(t("internal.create.success"));
         onOpenChange(false);
         onSuccess({
-          id: res.data.id,
-          checklist_conf_id: form.configId || 0, // Simplified for UI update
+          id: data.id,
+          checklist_conf_id: form.configId ? Number(form.configId) : 0,
           branch_id: branchId,
           date: form.date,
           state: "draft",
           summary: form.summary,
         });
       } else {
-        toast.error(res.message || t("internal.create.error"));
+        toast.error(!res.success ? (res.message || t("internal.create.error")) : t("internal.create.error"));
       }
     } catch {
       toast.error(t("internal.create.error"));
@@ -440,19 +436,25 @@ function CreateJobDialog({ open, onOpenChange, branchId, branchName, baseUrl, on
                     className="h-8 text-xs"
                 />
                 <div className="h-24 overflow-y-auto space-y-1">
-                    {filteredUsers.map(u => (
-                        <div key={u.id} className="flex items-center space-x-2 p-1 hover:bg-muted rounded cursor-pointer" onClick={() => {
-                             const ids = form.responsibleIds.includes(u.id) 
-                                ? form.responsibleIds.filter(id => id !== u.id)
-                                : [...form.responsibleIds, u.id];
-                             setForm({...form, responsibleIds: ids});
-                        }}>
-                             <div className={`w-4 h-4 rounded border flex items-center justify-center ${form.responsibleIds.includes(u.id) ? "bg-primary border-primary" : "border-input"}`}>
-                                {form.responsibleIds.includes(u.id) && <Plus className="h-3 w-3 text-primary-foreground" />}
-                             </div>
-                             <span className="text-sm">{u.name}</span>
-                        </div>
-                    ))}
+                    {filteredUsers.map((u) => {
+                      const checked = form.responsibleIds.includes(u.id);
+                      return (
+                        <label key={u.id} className="flex items-center space-x-2 p-1 hover:bg-muted rounded cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() =>
+                              setForm((f) => ({
+                                ...f,
+                                responsibleIds: checked ? f.responsibleIds.filter((id) => id !== u.id) : [...f.responsibleIds, u.id],
+                              }))
+                            }
+                            className="h-4 w-4 rounded border-primary"
+                          />
+                          <span className="text-sm">{u.name}</span>
+                        </label>
+                      );
+                    })}
                 </div>
             </div>
           </div>

@@ -12,6 +12,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useAuth } from "@/hooks/useAuth";
 
+type JobDetailData = {
+  checklist_conf_id?: string;
+  branch_id?: string;
+  date?: string;
+  state?: string;
+  summary?: string;
+  json_data?: { columns?: { name: string; type: string }[]; rows?: unknown[]; __sent_sequences?: unknown[] };
+  responsible_ids?: string[];
+};
+
+function getBaseUrl(): string {
+  return typeof window !== "undefined" ? localStorage.getItem("rememberMeBaseUrl") || "" : "";
+}
+
+const STATE_LABELS_KEYS: Record<string, string> = {
+  draft: "state.draft",
+  sent: "state.sent",
+  received: "checklist.list.received",
+  inprogress: "checklist.list.inprogress",
+  done: "checklist.list.done",
+};
+
 export default function InternalJobDetailPage() {
   const { t } = useLocale();
   const params = useParams();
@@ -19,42 +41,31 @@ export default function InternalJobDetailPage() {
   const id = Number(params.id);
   const { isGroupUser, isLoading: authLoading } = useAuth(false);
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<{
-    checklist_conf_id?: string;
-    branch_id?: string;
-    date?: string;
-    state?: string;
-    summary?: string;
-    json_data?: { columns?: { name: string; type: string }[]; rows?: unknown[] };
-    responsible_ids?: string[];
-  } | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState<JobDetailData | null>(null);
   const [summary, setSummary] = useState("");
+  const [users, setUsers] = useState<{ id: number; name: string }[]>([]);
 
   useEffect(() => {
-    if (!authLoading && !isGroupUser) {
-      router.replace("/dashboard");
-      return;
-    }
+    if (!authLoading && !isGroupUser) router.replace("/dashboard");
   }, [isGroupUser, authLoading, router]);
 
   useEffect(() => {
     if (!id || !isGroupUser) return;
-    const baseUrl = localStorage.getItem("rememberMeBaseUrl") || "";
+    const baseUrl = getBaseUrl();
     if (!baseUrl) {
       router.push("/dashboard/internal");
       return;
     }
-    setLoading(true);
+    const tid = setTimeout(() => setLoading(true), 0);
     checklistAPI
       .getDepartmentDetail(baseUrl, id)
       .then((res) => {
         if (res.success && res.data) {
-          const d = res.data as { summary?: string; [k: string]: unknown };
-          setData(res.data as any);
-          setSummary((d.summary as string) ?? "");
+          const d = res.data as JobDetailData;
+          setData(d);
+          setSummary(d.summary ?? "");
         } else {
-          toast.error(t("checklist.detail.notFound"), { description: res.message });
+          toast.error(t("checklist.detail.notFound"), { description: !res.success ? res.message : undefined });
           router.push("/dashboard/internal");
         }
       })
@@ -63,40 +74,59 @@ export default function InternalJobDetailPage() {
         router.push("/dashboard/internal");
       })
       .finally(() => setLoading(false));
+    return () => clearTimeout(tid);
   }, [id, isGroupUser, router, t]);
+
+  useEffect(() => {
+    if (!isGroupUser) return;
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) return;
+    checklistAPI.getChecklistUsers(baseUrl).then((res) => {
+      if (res.success && res.data) setUsers((res.data as { id: number; name: string }[]) ?? []);
+    });
+  }, [isGroupUser]);
 
   const handleUpdate = async (newData: { rows?: unknown[] }, status: "inprogress" | "done") => {
     if (!data) return;
-    setSaving(true);
-    const baseUrl = localStorage.getItem("rememberMeBaseUrl") || "";
-    if (!baseUrl) {
-      setSaving(false);
-      return;
-    }
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) return;
+    const currentJson = data.json_data ?? { columns: [], rows: [] };
+    const payload = {
+      json_data: {
+        columns: currentJson.columns,
+        rows: newData.rows ?? currentJson.rows ?? [],
+        __sent_sequences: currentJson.__sent_sequences,
+      },
+      summary,
+      ...(status === "done" && { state: "done" }),
+    };
     try {
-      const currentJson = data.json_data || { columns: [], rows: [] };
-      const payload = {
-        json_data: {
-          columns: currentJson.columns,
-          rows: newData.rows ?? currentJson.rows ?? [],
-          __sent_sequences: (currentJson as { __sent_sequences?: unknown[] }).__sent_sequences,
-        },
-        summary,
-        ...(status === "done" && { state: "done" }),
-      };
-      const response = await checklistAPI.updateDepartmentJob(baseUrl, id, payload);
-      if (response.success) {
-        const resData = response.data as { state?: string; json_data?: typeof data.json_data };
+      const res = await checklistAPI.updateDepartmentJob(baseUrl, id, payload);
+      if (res.success && res.data) {
+        const rd = res.data as { state?: string; json_data?: JobDetailData["json_data"] };
         toast.success(status === "done" ? t("checklist.detail.understood") : "Хадгалагдлаа");
-        setData((prev) => (prev ? { ...prev, state: resData.state ?? prev.state, json_data: resData.json_data ?? prev.json_data } : prev));
+        setData((prev) => (prev ? { ...prev, state: rd.state ?? prev.state, json_data: rd.json_data ?? prev.json_data } : prev));
         if (status === "done") router.push("/dashboard/internal");
       } else {
-        toast.error("Алдаа", { description: response.message });
+        toast.error("Алдаа", { description: !res.success ? res.message : undefined });
       }
     } catch {
       toast.error("Хадгалахад алдаа гарлаа");
-    } finally {
-      setSaving(false);
+    }
+  };
+
+  const handleSendRows = async (rowIndices: number[], userIds: number[]) => {
+    if (!data) return;
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) return;
+    const res = await checklistAPI.sendRowTask(baseUrl, id, rowIndices, userIds);
+    if (res.success && res.data) {
+      const rd = res.data as { json_data?: JobDetailData["json_data"]; responsible_ids?: string[] };
+      setData((prev) => (prev ? { ...prev, json_data: rd.json_data ?? prev.json_data, responsible_ids: rd.responsible_ids ?? prev.responsible_ids } : prev));
+      toast.success(t("checklist.send.success"), { description: res.message });
+    } else {
+      toast.error(res.message ?? "Илгээхэд алдаа гарлаа");
+      throw new Error(res.message);
     }
   };
 
@@ -115,13 +145,7 @@ export default function InternalJobDetailPage() {
   if (!data) return null;
 
   const isReadOnly = data.state === "done" || data.state === "cancel";
-  const stateLabels: Record<string, string> = {
-    draft: t("state.draft"),
-    sent: t("state.sent"),
-    received: t("checklist.list.received"),
-    inprogress: t("checklist.list.inprogress"),
-    done: t("checklist.list.done"),
-  };
+  const stateLabel = (s: string) => (STATE_LABELS_KEYS[s] ? t(STATE_LABELS_KEYS[s]) : s);
 
   return (
     <div className="space-y-6">
@@ -159,7 +183,7 @@ export default function InternalJobDetailPage() {
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">{t("table.state")}:</span>
-            <span className="font-medium">{stateLabels[data.state ?? ""] ?? data.state}</span>
+            <span className="font-medium">{stateLabel(data.state ?? "")}</span>
           </div>
           {data.responsible_ids && data.responsible_ids.length > 0 && (
             <div className="flex items-start gap-2 text-sm sm:col-span-2">
@@ -201,13 +225,14 @@ export default function InternalJobDetailPage() {
           onSubmit={(rows) => handleUpdate({ rows }, "done")}
           readOnly={isReadOnly}
           showRowMeta
+          showSendRows={isGroupUser && !isReadOnly}
+          users={users}
+          onSendRows={handleSendRows}
         />
       ) : (
         <Card className="border-none shadow-sm">
           <CardContent className="py-8">
-            <p className="text-muted-foreground text-sm text-center">
-              {t("internal.tableEmpty")}
-            </p>
+            <p className="text-muted-foreground text-sm text-center">{t("internal.tableEmpty")}</p>
           </CardContent>
         </Card>
       )}
