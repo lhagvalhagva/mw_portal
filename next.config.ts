@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    allowedDevOrigins: ["http://202.21.113.115", "202.21.113.115"],
+  allowedDevOrigins: ["http://202.21.113.115", "202.21.113.115"],
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
 };
 
 export default nextConfig;

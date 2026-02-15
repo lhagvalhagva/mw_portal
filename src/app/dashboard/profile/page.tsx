@@ -274,9 +274,26 @@ function CopyableInfoItem({
 function ProfileSkeleton() {
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-10">
-      <Skeleton className="h-[280px] w-full rounded-[2.5rem]" />
+      <Card className="border-none shadow-lg shadow-primary/5 rounded-[2.5rem] overflow-hidden bg-white dark:bg-card">
+        <div className="h-40 bg-muted/50 rounded-t-[2.5rem]" aria-hidden />
+        <CardContent className="relative px-8 pb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-end gap-6 -mt-16">
+            <div className="relative">
+              <Skeleton className="h-36 w-36 rounded-[2rem] shrink-0" />
+            </div>
+            <div className="flex-1 mb-2 space-y-2 min-w-0">
+              <Skeleton className="h-9 w-64" />
+              <Skeleton className="h-6 w-48" />
+            </div>
+            <div className="flex gap-3 mb-2 w-full md:w-auto">
+              <Skeleton className="h-10 w-28 rounded-xl" />
+              <Skeleton className="h-10 w-28 rounded-xl" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       <div className="space-y-4">
-        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-10 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Skeleton className="h-64 w-full rounded-[2rem]" />
           <Skeleton className="md:col-span-2 h-64 w-full rounded-[2rem]" />

@@ -160,43 +160,43 @@ export default function InternalJobDetailPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight gradient-text">{data.checklist_conf_id}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t("checklist.detail.id")}: #{id}
-          </p>
         </div>
       </div>
 
-      <Card className="border-none shadow-sm bg-card/80">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">{t("internal.jobInfo")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span>{t("checklist.detail.branch")}:</span>
-            <span className="font-medium">{data.branch_id ?? "–"}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>{t("table.date")}:</span>
-            <span className="font-medium">{data.date ?? "–"}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">{t("table.state")}:</span>
-            <span className="font-medium">{stateLabel(data.state ?? "")}</span>
-          </div>
-          {data.responsible_ids && data.responsible_ids.length > 0 && (
-            <div className="flex items-start gap-2 text-sm sm:col-span-2">
-              <Users className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-              <div>
-                <span className="text-muted-foreground">{t("checklist.detail.responsible")}: </span>
-                <span className="font-medium">{data.responsible_ids.join(", ")}</span>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
+      <Card className="overflow-hidden border-none shadow-sm">
+        <div className="grid grid-cols-1 divide-y divide-border sm:grid-cols-2 lg:grid-cols-4 lg:divide-y-0 lg:divide-x bg-muted/20">
+          <div className="p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">{t("checklist.detail.branch")}</span>
+            <div className="flex items-center gap-2 font-medium">
+              <MapPin className="h-4 w-4 text-blue-500" />
+              {data.branch_id ?? "–"}
+            </div>
+          </div>
+          
+          <div className="p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">{t("table.date")}</span>
+            <div className="flex items-center gap-2 font-medium">
+              <Calendar className="h-4 w-4 text-orange-500" />
+              {data.date ?? "–"}
+            </div>
+          </div>
+
+          <div className="p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">{t("table.state")}</span>
+            <span className="font-semibold text-sm">{stateLabel(data.state ?? "")}</span>
+          </div>
+
+          <div className="p-4 flex flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-wider">{t("checklist.detail.responsible")}</span>
+            <div className="flex items-center gap-2 font-medium overflow-hidden">
+              <Users className="h-4 w-4 text-emerald-500 shrink-0" />
+              <span className="truncate text-sm">{data.responsible_ids?.join(", ") || "–"}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+      
       <Card className="border-none shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
