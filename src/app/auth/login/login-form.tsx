@@ -14,10 +14,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Server, Mail, Lock, Loader2, Eye, EyeOff, Shield, LogIn } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
+import { getOdooBaseUrl } from "@/lib/config";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const { t } = useLocale();
-  const [baseUrl, setBaseUrl] = useState('');
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -31,29 +31,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
   useEffect(() => {
     setMounted(true);
-    const savedBaseUrl = localStorage.getItem('rememberMeBaseUrl');
     const savedDb = localStorage.getItem('rememberMeDb');
     const savedLogin = localStorage.getItem('rememberMeLogin');
-    if (savedBaseUrl && savedDb && savedLogin) {
-      setBaseUrl(savedBaseUrl);
+    if (savedDb && savedLogin) {
       setLogin(savedLogin);
       setRememberMe(true);
     }
   }, []);
-
-  const normalizeUrl = async (input: string): Promise<string> => {
-    if (input.startsWith('https://') || input.startsWith('http://')) {
-      return input;
-    }
-    const httpsUrl = `https://${input}`;
-    const isHttpsPage = window.location.protocol === 'https:';
-    if (isHttpsPage) return httpsUrl;
-    try {
-      const response = await fetch(httpsUrl, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
-      if (response.ok || response.status === 302) return httpsUrl;
-    } catch (e) {}
-    return `http://${input}`;
-  };
 
   const showDbSelectionDialog = (databases: string[]): Promise<string> => {
     setDbList(databases);
@@ -71,8 +55,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     e.preventDefault();
     setLoading(true);
     try {
-      const normalizedBaseUrl = await normalizeUrl(baseUrl);
-      const databases = await authAPI.getDatabases(normalizedBaseUrl);
+      const baseUrl = getOdooBaseUrl();
+      const databases = await authAPI.getDatabases(baseUrl);
       
       let finalDb = '';
       if (databases.length === 0) throw new Error(t('auth.noDatabase'));
@@ -83,10 +67,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         if (!finalDb) { setLoading(false); return; }
       }
 
-      const response = await authAPI.login({ baseUrl: normalizedBaseUrl, db: finalDb, login, password });
+      const response = await authAPI.login({ baseUrl, db: finalDb, login, password });
       if (response.success) {
         toast.success(t('auth.loginSuccess'));
-        localStorage.setItem('rememberMeBaseUrl', normalizedBaseUrl);
+        localStorage.setItem('rememberMeBaseUrl', baseUrl);
         localStorage.setItem('rememberMeDb', finalDb);
         if (rememberMe) {
           localStorage.setItem('rememberMeLogin', login);
@@ -124,21 +108,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 </div>
               </div>
 
-              {/* Form Fields - Compacted */}
+              {/* Form Fields - Compacted (Server URL нь default https://erp.ayanhotelsmongolia.com/ ашиглана) */}
               <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                    <Server size={12} className="text-primary"/> {t('auth.serverUrl')}
-                  </Label>
-                  <Input
-                    required
-                    value={baseUrl}
-                    onChange={(e) => setBaseUrl(e.target.value)}
-                    placeholder="example.odoo.com"
-                    className="h-11 rounded-xl bg-muted/40 border-none focus:ring-2 focus:ring-primary/20 transition-all px-4"
-                  />
-                </div>
-
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
                     <Mail size={12} className="text-primary"/> {t('auth.user')}
