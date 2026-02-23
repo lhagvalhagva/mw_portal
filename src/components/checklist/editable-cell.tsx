@@ -18,9 +18,30 @@ interface EditableCellProps {
   options?: string[];
   onChange: (value: any) => void;
   isMobile?: boolean;
+  /** Баганын is_edit false үед зөвхөн утга харуулна, засах боломжгүй */
+  readOnly?: boolean;
 }
 
-export function EditableCell({ type, value, options, onChange, isMobile }: EditableCellProps) {
+function ReadOnlyValue({ type, value, options }: { type: string; value: any; options?: string[] }) {
+  if (type === "boolean") return <span className="text-muted-foreground">{value ? "✓" : "—"}</span>;
+  if (type === "date" && value) {
+    const d = new Date(value);
+    return <span>{!isNaN(d.getTime()) ? format(d, "yyyy-MM-dd") : value}</span>;
+  }
+  if (type === "image" && value) {
+    const src = typeof value === "object" && value?.url ? value.url : value;
+    return <img src={src} className="h-10 w-10 object-cover rounded border" alt="" />;
+  }
+  if (type === "selection" && options?.length) {
+    return <span>{value || "—"}</span>;
+  }
+  if (type === "many2one" && Array.isArray(value) && value.length >= 2) {
+    return <span>{value[1] ?? "—"}</span>;
+  }
+  return <span className="break-words">{value ?? "—"}</span>;
+}
+
+export function EditableCell({ type, value, options, onChange, isMobile, readOnly }: EditableCellProps) {
   const { t } = useLocale();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -36,8 +57,11 @@ export function EditableCell({ type, value, options, onChange, isMobile }: Edita
     isMobile ? "h-11 border-border bg-background px-3" : "h-9 px-2 text-sm"
   );
 
-// editable-cell.tsx доторх классыг ингэж сольж үзээрэй:
-const dropdownContentClass = "z-[100] !opacity-100 bg-white dark:bg-slate-950 text-popover-foreground shadow-xl border border-border outline-none fill-mode-forwards";
+  const dropdownContentClass = "z-[100] !opacity-100 bg-white dark:bg-slate-950 text-popover-foreground shadow-xl border border-border outline-none fill-mode-forwards";
+
+  if (readOnly) {
+    return <ReadOnlyValue type={type} value={value} options={options} />;
+  }
 
   if (type === "boolean") {
     return (
@@ -104,11 +128,11 @@ const dropdownContentClass = "z-[100] !opacity-100 bg-white dark:bg-slate-950 te
           <div className="relative group border rounded-md overflow-hidden shrink-0 bg-muted/20">
             <Dialog>
               <DialogTrigger asChild>
-                <img src={value} className="h-10 w-10 object-cover cursor-zoom-in" alt="thumb" />
+                <img src={typeof value === "object" && value?.url ? value.url : value} className="h-10 w-10 object-cover cursor-zoom-in" alt="thumb" />
               </DialogTrigger>
               <DialogContent className="max-w-3xl p-0 bg-black/5 overflow-hidden">
                 <DialogTitle className="sr-only">Preview</DialogTitle>
-                <img src={value} className="w-full h-auto" alt="full" />
+                <img src={typeof value === "object" && value?.url ? value.url : value} className="w-full h-auto" alt="full" />
               </DialogContent>
             </Dialog>
             <button onClick={() => onChange(null)} className="absolute top-0 right-0 p-1 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity">

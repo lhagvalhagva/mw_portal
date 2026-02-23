@@ -148,7 +148,13 @@ export function DynamicTable({
                   <td className="p-4 text-center text-muted-foreground border-b align-top font-mono text-xs">{idx + 1}</td>
                   {initialData.columns.map(col => col.name !== '№' && (
                     <td key={col.name} className="p-2 border-l border-b align-top group-hover:bg-muted/10 transition-colors">
-                      <EditableCell type={col.type} value={row[col.name]} options={col.options} onChange={(v) => handleUpdate(idx, col.name, v)} />
+                      <EditableCell
+                        type={col.type}
+                        value={row[col.name]}
+                        options={col.options}
+                        onChange={(v) => handleUpdate(idx, col.name, v)}
+                        readOnly={readOnly || col.is_edit === false}
+                      />
                     </td>
                   ))}
                   {showRowMeta && (
@@ -181,7 +187,14 @@ export function DynamicTable({
                     <label className="text-[10px] font-bold text-muted-foreground/70 uppercase flex items-center gap-1">
                        <ChevronRight className="h-3 w-3" /> {col.name}
                     </label>
-                    <EditableCell type={col.type} value={row[col.name]} options={col.options} isMobile onChange={(v) => handleUpdate(idx, col.name, v)} />
+                    <EditableCell
+                      type={col.type}
+                      value={row[col.name]}
+                      options={col.options}
+                      isMobile
+                      onChange={(v) => handleUpdate(idx, col.name, v)}
+                      readOnly={readOnly || col.is_edit === false}
+                    />
                   </div>
                 ))}
                 {showRowMeta && (

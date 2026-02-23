@@ -107,7 +107,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'auth.selectDatabaseDesc': 'Системд бүртгэлтэй сангууд',
     'auth.select': 'Сонгох',
     'auth.copyright': 'Бүх эрх хуулиар хамгаалагдсан.',
-    'auth.tagline': 'Бизнесийн үйл ажиллагааг удирдах цогц портал',
+    'auth.tagline': 'Checklist портал',
     'auth.testEnvironment': 'Test Environment',
     
     // Table
@@ -321,7 +321,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'auth.selectDatabaseDesc': 'Registered databases in the system',
     'auth.select': 'Select',
     'auth.copyright': 'All rights reserved.',
-    'auth.tagline': 'Comprehensive portal for managing business operations',
+    'auth.tagline': 'Checklist portal',
     'auth.testEnvironment': 'Test Environment',
     
     // Table
