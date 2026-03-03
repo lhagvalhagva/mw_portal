@@ -27,6 +27,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [isDbDialogOpen, setIsDbDialogOpen] = useState(false);
   const [dbList, setDbList] = useState<string[]>([]);
   const [selectedDb, setSelectedDb] = useState('');
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [resetLogin, setResetLogin] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -49,6 +52,47 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         resolve(chosenDb);
       };
     });
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = resetLogin.trim();
+    if (!value) {
+      toast.error(t('auth.resetPasswordEnterLogin'));
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const baseUrl = getOdooBaseUrl();
+      const databases = await authAPI.getDatabases(baseUrl);
+      if (databases.length === 0) {
+        toast.error(t('auth.noDatabase'));
+        setResetLoading(false);
+        return;
+      }
+      let db: string;
+      if (databases.length === 1) {
+        db = databases[0];
+      } else {
+        db = await showDbSelectionDialog(databases);
+        if (!db) {
+          setResetLoading(false);
+          return;
+        }
+      }
+      const result = await authAPI.resetPassword(baseUrl, value, db);
+      if (result.success) {
+        toast.success(result.message || t('auth.resetPasswordSuccess'));
+        setIsResetDialogOpen(false);
+        setResetLogin('');
+      } else {
+        toast.error(result.message || t('auth.error'));
+      }
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || t('auth.error'));
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,7 +210,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   {loading ? <Loader2 className="animate-spin h-5 w-5" /> : <div className="flex items-center gap-2"><LogIn size={18}/> {t('auth.login')}</div>}
                 </Button>
                 <div className="text-center">
-                  <a href="#" className="text-xs font-bold text-primary/80 hover:text-primary transition-colors">{t('auth.forgotPassword')}</a>
+                  <button
+                    type="button"
+                    onClick={() => setIsResetDialogOpen(true)}
+                    className="text-xs font-bold text-primary/80 hover:text-primary transition-colors"
+                  >
+                    {t('auth.forgotPassword')}
+                  </button>
                 </div>
               </div>
             </div>
@@ -209,6 +259,37 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           {t('auth.copyright')} <span className="font-bold">Managewall LLC</span>
         </p>
       </footer>
+
+      {/* Нууц үг сэргээх Dialog */}
+      <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+        <DialogContent className="rounded-[2rem] border-none p-6 max-w-sm">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="text-xl font-black gradient-text">
+              {t('auth.resetPasswordTitle')}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              {t('auth.resetPasswordDesc')}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
+            <Input
+              type="text"
+              value={resetLogin}
+              onChange={(e) => setResetLogin(e.target.value)}
+              placeholder={t('auth.resetPasswordPlaceholder')}
+              className="h-11 rounded-xl bg-muted/40 border-none px-4"
+              autoComplete="email"
+            />
+            <Button
+              type="submit"
+              className="w-full h-11 rounded-xl font-bold btn-gradient"
+              disabled={resetLoading}
+            >
+              {resetLoading ? <Loader2 className="animate-spin h-5 w-5" /> : t('auth.resetPasswordSend')}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Database Selection Dialog */}
       <Dialog open={isDbDialogOpen} onOpenChange={setIsDbDialogOpen}>
