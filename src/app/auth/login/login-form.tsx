@@ -82,7 +82,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
       const result = await authAPI.resetPassword(baseUrl, value, db);
       if (result.success) {
-        toast.success(result.message || t('auth.resetPasswordSuccess'));
+        const emailText = result.email ? ` (${result.email})` : '';
+        toast.success(`${result.message || t('auth.resetPasswordSuccess')}${emailText}`);
         setIsResetDialogOpen(false);
         setResetLogin('');
       } else {

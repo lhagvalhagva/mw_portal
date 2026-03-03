@@ -128,11 +128,11 @@ export const authAPI = {
     }
   },
 
-  /** Нууц үг сэргээх: db + login оруулахад имэйл рүү холбоос илгээнэ (auth=none, db заавал) */
-  resetPassword: async (baseUrl: string, login: string, db: string): Promise<{ success: boolean; message?: string }> => {
+  /** Нууц үг сэргээх: db + login оруулахад имэйл рүү холбоос илгээнэ (auth=none, db заавал). Илгээсэн имэйл data.email-аар ирнэ. */
+  resetPassword: async (baseUrl: string, login: string, db: string): Promise<{ success: boolean; message?: string; email?: string }> => {
     try {
-      const res = await jsonRpc(baseUrl, '/api/auth/reset-password', { login: login.trim(), db }) as { status?: string; message?: string };
-      if (res.status === 'success') return { success: true, message: res.message };
+      const res = await jsonRpc(baseUrl, '/api/auth/reset-password', { login: login.trim(), db }) as { status?: string; message?: string; data?: { email?: string } };
+      if (res.status === 'success') return { success: true, message: res.message, email: res.data?.email };
       return { success: false, message: res.message || 'Алдаа гарлаа' };
     } catch (error) {
       const msg = (error as Error)?.message;
